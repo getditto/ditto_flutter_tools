@@ -8,7 +8,6 @@ import 'package:permission_handler/permission_handler.dart';
 
 import 'dialog.dart';
 import 'dql_builder.dart';
-import 'presence.dart';
 import 'task.dart';
 import 'task_view.dart';
 
@@ -45,6 +44,8 @@ class _DittoExampleState extends State<DittoExample> {
   Ditto? _ditto;
   var _syncing = true;
   int _pageIndex = 0;
+
+  late final SyncSubscription _subscription;
 
   @override
   void initState() {
@@ -97,6 +98,10 @@ class _DittoExampleState extends State<DittoExample> {
     await ditto.smallPeerInfo.setSyncScope(SmallPeerInfoSyncScope.bigPeerOnly);
 
     await ditto.startSync();
+
+    _subscription = await ditto.sync.registerSubscription(
+      "SELECT * FROM $collection WHERE deleted = false",
+    );
 
     setState(() => _ditto = ditto);
   }
@@ -158,16 +163,20 @@ class _DittoExampleState extends State<DittoExample> {
               Expanded(child: _tasksList),
             ],
           ),
-        1 => PresenceView(ditto: _ditto!),
-        2 => PresenceViewer(ditto: _ditto!),
+        1 => PresenceViewer(ditto: _ditto!),
+        2 => SyncStatusView(
+            ditto: _ditto!,
+            subscriptions: [_subscription],
+          ),
         _ => throw "unreachable",
       },
       bottomNavigationBar: BottomNavigationBar(
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.task), label: "Tasks"),
-          BottomNavigationBarItem(icon: Icon(Icons.devices), label: "Presence"),
+          // BottomNavigationBarItem(icon: Icon(Icons.devices), label: "Presence"),
           BottomNavigationBarItem(
               icon: Icon(Icons.devices), label: "Presence (tools)"),
+          BottomNavigationBarItem(icon: Icon(Icons.sync), label: "Sync Status"),
         ],
         currentIndex: _pageIndex,
         onTap: (value) => setState(() => _pageIndex = value),
