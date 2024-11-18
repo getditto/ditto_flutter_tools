@@ -32,7 +32,7 @@ class SyncStatusHelper with ChangeNotifier {
   SyncStatusHelper({
     required this.ditto,
     required this.subscriptions,
-    this.idleTimeoutInterval = const Duration(seconds: 5),
+    this.idleTimeoutInterval = const Duration(seconds: 1),
   }) {
     _init();
   }

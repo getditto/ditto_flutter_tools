@@ -15,8 +15,8 @@ class SyncStatusView extends StatefulWidget {
     super.key,
     required this.ditto,
     required this.subscriptions,
-    this.idleTimeoutInterval = const Duration(seconds: 5),
-    this.autoRefreshInterval = const Duration(seconds: 5),
+    this.idleTimeoutInterval = const Duration(seconds: 1),
+    this.autoRefreshInterval = const Duration(seconds: 1),
   });
 
   @override
