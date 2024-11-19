@@ -31,9 +31,9 @@ class SyncStatusHelper with ChangeNotifier {
 
   final _lastUpdatedAt = <SyncSubscription, DateTime>{};
   var _connected = false;
-  DateTime? _lastConnectionEstablished;
-  DateTime? _lastConnectionLost;
-  DateTime? _lastConnected;
+  DateTime? _becameConnectedAt;
+  DateTime? _becameDisconnectedAt;
+  DateTime? _lastConnectedAt;
   List<StoreObserver>? _observers;
   PresenceObserver? _presenceObserver;
 
@@ -63,10 +63,10 @@ class SyncStatusHelper with ChangeNotifier {
       final isConnectedNow = graph.localPeer.isConnectedToDittoCloud ||
           graph.remotePeers.isNotEmpty;
 
-      if (isConnectedNow) _lastConnected = DateTime.now();
-      if (_connected && !isConnectedNow) _lastConnectionLost = DateTime.now();
+      if (isConnectedNow) _lastConnectedAt = DateTime.now();
+      if (_connected && !isConnectedNow) _becameDisconnectedAt = DateTime.now();
       if (!_connected && isConnectedNow) {
-        _lastConnectionEstablished = DateTime.now();
+        _becameConnectedAt = DateTime.now();
       }
 
       _connected = isConnectedNow;
@@ -90,13 +90,13 @@ class SyncStatusHelper with ChangeNotifier {
   bool get isConnected => _connected;
 
   /// The most recent time when this peer was connected to at least one other peer (i.e. [isConnected] is true)
-  DateTime? get lastConnectedAt => _lastConnected;
+  DateTime? get lastConnectedAt => _lastConnectedAt;
 
   /// The most recent time when [isConnected] changed from `true` to `false`
-  DateTime? get lastConnectionLostAt => _lastConnectionLost;
+  DateTime? get becameDisconnectedAt => _becameDisconnectedAt;
 
   /// The most recent time when [isConnected] changed from `false` to `true`
-  DateTime? get lastConnectionEstablishedAt => _lastConnectionEstablished;
+  DateTime? get becameConnectedAt => _becameConnectedAt;
 
   /// The overall status of the [SyncSubscription] managed by this helper
   ///
