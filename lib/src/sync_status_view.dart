@@ -90,9 +90,12 @@ class _SyncStatusViewState extends State<SyncStatusView> {
         ],
       );
 
-  Widget get _overallStatus => ListTile(
+  Widget get _overallStatus {
+    final (syncing, connected) = _helper.overallStatus;
+    return ListTile(
         title: const Text("Sync Status"),
         subtitle: Text("${_helper.subscriptions.length} Subscriptions"),
         trailing: Text(_helper.overallStatus.toString()),
       );
+  }
 }
