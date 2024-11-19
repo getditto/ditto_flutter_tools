@@ -37,6 +37,9 @@ class SyncStatusHelper with ChangeNotifier {
   List<StoreObserver>? _observers;
   PresenceObserver? _presenceObserver;
 
+  var _disposeCalled = false;
+
+  /// Create a [SyncStatusHelper] for a [Ditto] instance for a given list of [SyncSubscription]s
   SyncStatusHelper({
     required this.ditto,
     required this.subscriptions,
@@ -45,12 +48,22 @@ class SyncStatusHelper with ChangeNotifier {
     _init();
   }
 
+  /// Create a [SyncStatusHelper] for a [Ditto] instance based on the currently-active [SyncSubscription]s
+  ///
+  /// Note that the list of subscriptions tracked by this class will not update if the subscriptions registered with the underlying [Ditto] instance change.
+  SyncStatusHelper.fromCurrentSubscriptions({
+    required this.ditto,
+    this.idleTimeoutInterval = const Duration(seconds: 1),
+  }) : subscriptions = ditto.sync.subscriptions.toList() {
+    _init();
+  }
+
   Future<void> _init() async {
     Future<void> onSubscriptionChanged(SyncSubscription sub) async {
       _lastUpdatedAt[sub] = DateTime.now();
-      notifyListeners();
+      _safeNotify();
       await Future.delayed(idleTimeoutInterval);
-      notifyListeners();
+      _safeNotify();
     }
 
     _observers = await _mapObservers(
@@ -58,6 +71,7 @@ class SyncStatusHelper with ChangeNotifier {
       subscriptions,
       onSubscriptionChanged,
     );
+
 
     _presenceObserver = await ditto.presence.observe((graph) {
       final isConnectedNow = graph.localPeer.isConnectedToDittoCloud ||
@@ -70,20 +84,27 @@ class SyncStatusHelper with ChangeNotifier {
       }
 
       _connected = isConnectedNow;
-      notifyListeners();
+      _safeNotify();
     });
 
-    notifyListeners();
+    _safeNotify();
   }
 
   @override
   Future<void> dispose() async {
+    _disposeCalled = true;
+
     super.dispose();
+
     await _presenceObserver?.stop();
     final futures = _observers?.map((observer) => observer.cancel());
     if (futures != null) {
       await Future.wait(futures);
     }
+  }
+
+  void _safeNotify() {
+    if (!_disposeCalled) notifyListeners();
   }
 
   /// Whether this peer is connected to at least one other peer.

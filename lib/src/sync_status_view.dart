@@ -1,6 +1,7 @@
 import 'package:ditto_flutter_tools/src/sync_status_helper.dart';
 import 'package:ditto_live/ditto_live.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class SyncStatusView extends StatefulWidget {
@@ -43,16 +44,20 @@ class _SyncStatusViewState extends State<SyncStatusView> {
   @override
   void didUpdateWidget(covariant SyncStatusView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _autoUpdateSubscription.cancel();
-    _helper.removeListener(_listener);
+
+    if (widget.autoRefreshInterval != oldWidget.autoRefreshInterval) {
+      _autoUpdateSubscription.cancel();
+      _autoUpdateSubscription = Stream.periodic(widget.autoRefreshInterval)
+          .listen((_) => setState(() {}));
+    }
+
+    _helper.dispose();
     _helper = SyncStatusHelper(
       ditto: widget.ditto,
       subscriptions: widget.subscriptions,
       idleTimeoutInterval: widget.idleTimeoutInterval,
     );
     _helper.addListener(_listener);
-    _autoUpdateSubscription = Stream.periodic(widget.autoRefreshInterval)
-        .listen((_) => setState(() {}));
 
     setState(() {});
   }
@@ -75,27 +80,60 @@ class _SyncStatusViewState extends State<SyncStatusView> {
             const ListTile(title: Text("No subscriptions tracked")),
           ..._helper.subscriptions.map(
             (sub) {
-              final lastUpdated = switch (_helper.lastUpdatedAt(sub)) {
-                DateTime d => timeago.format(d),
-                null => "Never",
-              };
-
               return ListTile(
                 title: Text(sub.queryString),
-                subtitle: Text("Last updated: $lastUpdated"),
-                trailing: Text(_helper.statusFor(sub).toString()),
+                subtitle: Text(
+                  "Last updated: ${_date(_helper.lastUpdatedAt(sub))}",
+                ),
+                leading: _statusIcon(_helper.statusFor(sub)),
               );
             },
           ),
         ],
       );
 
-  Widget get _overallStatus {
-    final (syncing, connected) = _helper.overallStatus;
-    return ListTile(
+  Widget get _overallStatus => ExpansionTile(
         title: const Text("Sync Status"),
         subtitle: Text("${_helper.subscriptions.length} Subscriptions"),
-        trailing: Text(_helper.overallStatus.toString()),
+        leading: _statusIcon(_helper.overallStatus),
+        children: [
+          ListTile(
+            title: Text("Connected: ${_helper.isConnected}"),
+            subtitle: _helper.isConnected
+                ? Text(
+                    "Connection established: ${_date(_helper.becameConnectedAt)}")
+                : Text(
+                    "Connection lost: ${_date(_helper.becameDisconnectedAt)}"),
+          )
+        ],
       );
-  }
 }
+
+String _date(DateTime? date) => switch (date) {
+      DateTime d => timeago.format(d),
+      null => "Never",
+    };
+
+Widget _statusIcon(SyncStatus status) => switch (status) {
+      SyncStatus.disconnected => const Tooltip(
+          message: "Disconnected",
+          child: Icon(
+            Icons.sync_disabled,
+            color: Colors.red,
+          ),
+        ),
+      SyncStatus.connectedSyncing => const Tooltip(
+          message: "Connected (Syncing)",
+          child: Icon(
+            Icons.sync,
+            color: Colors.green,
+          ),
+        ),
+      SyncStatus.connectedIdle => const Tooltip(
+          message: "Connected (Idle)",
+          child: Icon(
+            Icons.hourglass_empty,
+            color: Colors.orange,
+          ),
+        ),
+    };

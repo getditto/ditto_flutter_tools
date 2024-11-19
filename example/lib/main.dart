@@ -2,6 +2,7 @@
 
 import 'package:ditto_flutter_tools/ditto_flutter_tools.dart';
 import 'package:ditto_live/ditto_live.dart';
+import 'package:example/presence.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -130,52 +131,30 @@ class _DittoExampleState extends State<DittoExample> {
     if (ditto == null) return _loading;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Ditto Tasks"),
-        actions: [
-          MenuAnchor(
-            builder: (context, controller, child) => IconButton(
-              icon: const Icon(Icons.menu),
-              onPressed: () {
-                if (controller.isOpen) {
-                  controller.close();
-                } else {
-                  controller.open();
-                }
-              },
-            ),
-            menuChildren: [
-              MenuItemButton(
-                child: const Text("Show Disk Usage"),
-                onPressed: () => DiskUsage.show(context, ditto),
-              ),
-            ],
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text("Ditto Tasks")),
       floatingActionButton: _pageIndex == 0 ? _fab : null,
-      body: switch (_pageIndex) {
-        0 => Column(
+      body: IndexedStack(
+        index: _pageIndex,
+        children: [
+          Column(
             children: [
               _syncTile,
-              const LogLevelSwitch(),
+              // const LogLevelSwitch(),
               const Divider(height: 1),
               Expanded(child: _tasksList),
             ],
           ),
-        1 => PresenceViewer(ditto: _ditto!),
-        2 => SyncStatusView(
+          PresenceView(ditto: _ditto!),
+          SyncStatusView(
             ditto: _ditto!,
             subscriptions: [_subscription],
           ),
-        _ => throw "unreachable",
-      },
+        ],
+      ),
       bottomNavigationBar: BottomNavigationBar(
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.task), label: "Tasks"),
-          // BottomNavigationBarItem(icon: Icon(Icons.devices), label: "Presence"),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.devices), label: "Presence (tools)"),
+          BottomNavigationBarItem(icon: Icon(Icons.devices), label: "Presence"),
           BottomNavigationBarItem(icon: Icon(Icons.sync), label: "Sync Status"),
         ],
         currentIndex: _pageIndex,
@@ -256,4 +235,23 @@ class _DittoExampleState extends State<DittoExample> {
           ),
         ),
       );
+
+  // Widget get _menuButton => MenuAnchor(
+  //       builder: (context, controller, child) => IconButton(
+  //         icon: const Icon(Icons.menu),
+  //         onPressed: () {
+  //           if (controller.isOpen) {
+  //             controller.close();
+  //           } else {
+  //             controller.open();
+  //           }
+  //         },
+  //       ),
+  //       menuChildren: [
+  //         MenuItemButton(
+  //           child: const Text("Show Disk Usage"),
+  //           onPressed: () => DiskUsage.show(context, ditto),
+  //         ),
+  //       ],
+  //     );
 }
