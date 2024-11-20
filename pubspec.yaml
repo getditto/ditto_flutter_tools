@@ -2,6 +2,7 @@ name: ditto_flutter_tools
 description: "Diagnostic and Debugging Tools for Ditto in Flutter"
 version: 0.0.1
 homepage: "https://ditto.live"
+repository: https://github.com/getditto/ditto_flutter_tools
 
 publish_to: none  # remove this once todo in readme is fixed
 
@@ -13,7 +14,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  ditto_live: 4.8.0-publicpreview.2
+  ditto_live: ^4.8.0-publicpreview.2
   webview_flutter: ^4.8.0
   proper_filesize: ^0.0.2
   path: ^1.9.0
