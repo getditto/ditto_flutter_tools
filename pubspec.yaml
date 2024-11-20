@@ -1,7 +1,9 @@
 name: ditto_flutter_tools
-description: "A new Flutter package project."
+description: "Diagnostic and Debugging Tools for Ditto in Flutter"
 version: 0.0.1
 homepage: "https://ditto.live"
+
+publish_to: none  # remove this once todo in readme is fixed
 
 environment:
   sdk: '>=3.4.0 <4.0.0'

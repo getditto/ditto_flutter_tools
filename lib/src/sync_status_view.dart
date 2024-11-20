@@ -1,7 +1,6 @@
 import 'package:ditto_flutter_tools/src/sync_status_helper.dart';
 import 'package:ditto_live/ditto_live.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class SyncStatusView extends StatefulWidget {
