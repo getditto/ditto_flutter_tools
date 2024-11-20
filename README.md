@@ -77,4 +77,34 @@ If, on the other hand, the device lost connectivity for one minute during that f
 
 ### Interpreting the data
 
-TODO
+#### No historical tracking
+
+`SyncStatusHelper` only tracks data from the point at which it was created, and cannot provide data about any point in time before its creation.
+
+So for example, if your device was connected five minutes ago, then lost connectivity one minute ago, then you created a `SyncStatusHelper`, it would report that this device had never been connected.
+
+#### Peer-to-peer specific interpretations
+
+The sync state means:
+ - `disconnected` - you are not connected to other peers
+ - `connectedIdle` - you are connected to at least one peer and have not received recent updates
+ - `connectedSyncing` - you are connected to at least one peer and have received at least one recent update
+
+When connected to a big peer, being in a `connectedIdle` state can be interpreted as meaning "I am up to date with what the big peer has".
+However, if connected via peer-to-peer connection to another small peer, that interpretation isn't always correct.
+
+For example:
+ - you could be connected to another peer, but you are islanded from the rest of the mesh
+ - the peer you are connected to could have a different set of sync subscriptions, and so would have incomplete data
+
+#### Freshness
+
+You may also want to consider the "freshness" of data when you are disconnected.
+For example, consider the following scenarios:
+ - your device is `disconnected`, your subscription was last updated five days ago, and `lastConnectedAt` is five days ago
+ - your device is `disconnected`, your subscription was last updated five days ago, and `lastConnectedAt` is 1 minute ago
+
+In the second scenario, you can be quite confident that your data is still the most up-to-date version; it's quite unlikely that you have had no updates in the last five days, but in the one minute you've been offline, there's new data. Compare that with the first scenario, in which the last update was exactly when you lost connectivity.
+
+That said, the aim of this tool is to provide heuristics that you can combine with an understanding of your data model to get an accurate picture of the state of your device.
+If you have specific knowledge about your data model or update frequency, you can use that knowledge to get a clearer view of the data you have locally.
