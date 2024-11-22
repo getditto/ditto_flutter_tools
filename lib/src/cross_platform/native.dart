@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 
 List<(String, int)> directorySizeSummary(String directory) =>
     Directory(directory).listSync().map((entity) {
@@ -35,3 +36,8 @@ void _copyDirImpl(Directory source, Directory destination) =>
         entity.copySync(join(destination.path, basename(entity.path)));
       }
     });
+
+Future<String> tempDir() async {
+  final dir = await getTemporaryDirectory();
+  return dir.path;
+}

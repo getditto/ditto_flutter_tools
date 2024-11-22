@@ -131,7 +131,10 @@ class _DittoExampleState extends State<DittoExample> {
     if (ditto == null) return _loading;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Ditto Tasks")),
+      appBar: AppBar(
+        title: const Text("Ditto Tasks"),
+        actions: [_toolsButton],
+      ),
       floatingActionButton: _pageIndex == 0 ? _fab : null,
       body: IndexedStack(
         index: _pageIndex,
@@ -236,22 +239,12 @@ class _DittoExampleState extends State<DittoExample> {
         ),
       );
 
-  // Widget get _menuButton => MenuAnchor(
-  //       builder: (context, controller, child) => IconButton(
-  //         icon: const Icon(Icons.menu),
-  //         onPressed: () {
-  //           if (controller.isOpen) {
-  //             controller.close();
-  //           } else {
-  //             controller.open();
-  //           }
-  //         },
-  //       ),
-  //       menuChildren: [
-  //         MenuItemButton(
-  //           child: const Text("Show Disk Usage"),
-  //           onPressed: () => DiskUsage.show(context, ditto),
-  //         ),
-  //       ],
-  //     );
+  Widget get _toolsButton => IconButton(
+        icon: const Icon(Icons.build),
+        tooltip: "Open Ditto Tools",
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => AllTools(ditto: _ditto!)),
+        ),
+      );
 }

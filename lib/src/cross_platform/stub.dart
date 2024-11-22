@@ -4,3 +4,5 @@ Never get _$ => throw "stub";
 List<(String, int)> directorySizeSummary(String directory) => _$;
 
 void copyDir(String from, String to) => _$;
+
+Future<String> tempDir() => _$;
