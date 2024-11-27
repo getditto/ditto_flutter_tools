@@ -2,6 +2,8 @@
 
 Diagnostic and Debugging Tools for Ditto in Flutter
 
+For support, please contact Ditto Support (<support@ditto.live>).
+
 ## `SyncStatusHelper` and `SyncStatusView`
 
 These tools are intended to provide insights into the status of your subscriptions.
