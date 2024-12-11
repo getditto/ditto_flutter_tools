@@ -12,10 +12,11 @@ import 'dql_builder.dart';
 import 'task.dart';
 import 'task_view.dart';
 
-const appID = "caf9e870-d416-4b1c-9ab4-fb6e8319dd25";
-const token = "cb639c76-5633-44dd-ad28-03a5a43f092e";
+const appID = "REPLACE_ME_WITH_YOUR_APP_ID";
+const token = "REPLACE_ME_WITH_YOUR_PLAYGROUND_TOKEN";
 
-const authAppID = "3cffb689-8a99-4b4c-bca1-0809a5135748";
+
+const authAppID = "REPLACE_ME_WITH_YOUR_APP_ID";
 
 const collection = "tasks13";
 
@@ -63,22 +64,22 @@ class _DittoExampleState extends State<DittoExample> {
       Permission.bluetoothScan
     ].request();
 
-    // final identity = await OnlinePlaygroundIdentity.create(
-    //   appID: appID,
-    //   token: token,
-    // );
-
-    final identity = await OnlineWithAuthenticationIdentity.create(
-      appID: authAppID,
-      authenticationHandler: AuthenticationHandler(
-        authenticationExpiringSoon: (authenticator, secondsRemaining) async {
-          await authenticator.login(token: token, provider: "auth-webhook");
-        },
-        authenticationRequired: (authenticator) async {
-          await authenticator.login(token: token, provider: "auth-webhook");
-        },
-      ),
+    final identity = await OnlinePlaygroundIdentity.create(
+      appID: appID,
+      token: token,
     );
+
+    // final identity = await OnlineWithAuthenticationIdentity.create(
+    //   appID: authAppID,
+    //   authenticationHandler: AuthenticationHandler(
+    //     authenticationExpiringSoon: (authenticator, secondsRemaining) async {
+    //       await authenticator.login(token: token, provider: "auth-webhook");
+    //     },
+    //     authenticationRequired: (authenticator) async {
+    //       await authenticator.login(token: token, provider: "auth-webhook");
+    //     },
+    //   ),
+    // );
 
     final persistenceDirectory = await getApplicationDocumentsDirectory();
 
