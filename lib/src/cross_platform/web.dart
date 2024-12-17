@@ -3,3 +3,5 @@ List<(String, int)> directorySizeSummary(String directory) =>
 
 void copyDir(String from, String to) => 
     throw UnsupportedError("Not supported on web");
+
+Future<String> tempDir() => _$;
