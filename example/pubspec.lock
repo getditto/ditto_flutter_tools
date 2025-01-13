@@ -539,10 +539,10 @@ packages:
     dependency: transitive
     description:
       name: proper_filesize
-      sha256: bd7566ec10e0425b3b6f81691cce9a6d16c08e590ae15b2df0a1c22f432dc205
+      sha256: "5426f6698aa6a189d5475bcf189020cf5a3661e3ff389bc46551e32b0279164e"
       url: "https://pub.dev"
     source: hosted
-    version: "0.0.2"
+    version: "1.0.2"
   pub_semver:
     dependency: transitive
     description:

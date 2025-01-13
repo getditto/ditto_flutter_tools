@@ -14,7 +14,7 @@ dependencies:
 
   ditto_live: ^4.8.0-publicpreview.2
   webview_flutter: ^4.8.0
-  proper_filesize: ^0.0.2
+  proper_filesize: ^1.0.2
   path: ^1.9.0
   file_picker: ^8.1.4
   timeago: ^3.7.0

@@ -76,8 +76,7 @@ class _DiskUsageState extends State<DiskUsage> {
 }
 
 String _humanReadableBytes(int bytes) =>
-    ProperFilesize.generateHumanReadableFilesize(
-      bytes,
-      base: Bases.Metric,
+    FileSize.fromBytes(bytes).toString(
+      unit: Unit.auto(size: bytes, baseType: BaseType.metric),
       decimals: 0,
     );
