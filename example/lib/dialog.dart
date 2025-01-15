@@ -52,7 +52,7 @@ class _DialogState extends State<_Dialog> {
 
     if (imageBytes == null) return;
 
-    final attachment = await widget.ditto.store.newAttachment(
+    final attachment = widget.ditto.store.newAttachment(
       _imageBytes!,
       AttachmentMetadata({
         "blurhash": _hash!.hash,

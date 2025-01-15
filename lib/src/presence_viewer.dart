@@ -28,7 +28,7 @@ class _PresenceViewerState extends State<PresenceViewer> {
     await _controller.loadFlutterAsset(
       "packages/ditto_flutter_tools/lib/src/presence_assets/index.html",
     );
-    _observer = await widget.ditto.presence.observe(_onPresenceChanged);
+    _observer = widget.ditto.presence.observe(_onPresenceChanged);
   }
 
   @override

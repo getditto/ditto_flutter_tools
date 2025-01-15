@@ -21,7 +21,7 @@ class DiskUsage extends StatefulWidget {
 
 class _DiskUsageState extends State<DiskUsage> {
   late final _paths = directorySizeSummary(
-    widget.ditto.persistenceDirectoryString,
+    widget.ditto.persistenceDirectory,
   );
 
   @override
@@ -60,7 +60,7 @@ class _DiskUsageState extends State<DiskUsage> {
         onPressed: () async {
           final path = await FilePicker.platform.getDirectoryPath();
           if (path == null) return;
-          copyDir(widget.ditto.persistenceDirectoryString, path);
+          copyDir(widget.ditto.persistenceDirectory, path);
           if (mounted) Navigator.pop(context);
           _showSnackbar("Data exported to $path");
         },

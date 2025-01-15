@@ -29,19 +29,15 @@ class DqlBuilder extends StatefulWidget {
 }
 
 class _DqlBuilderState extends State<DqlBuilder> {
-  StoreObserver? _observer;
-  SyncSubscription? _subscription;
+  late StoreObserver _observer;
+  late SyncSubscription _subscription;
   QueryResult? _result;
 
   @override
   void initState() {
     super.initState();
 
-    _init();
-  }
-
-  Future<void> _init() async {
-    final observer = await widget.ditto.store.registerObserver(
+    final observer = widget.ditto.store.registerObserver(
       widget.query,
       arguments: widget.queryArgs ?? {},
       onChange: (result) {
@@ -49,7 +45,7 @@ class _DqlBuilderState extends State<DqlBuilder> {
       },
     );
 
-    final subscription = await widget.ditto.sync.registerSubscription(
+    final subscription = widget.ditto.sync.registerSubscription(
       widget.query,
       arguments: widget.queryArgs ?? {},
     );
@@ -68,29 +64,30 @@ class _DqlBuilderState extends State<DqlBuilder> {
         widget.queryArgs == oldWidget.queryArgs;
 
     if (!isSame) {
-      _observer?.cancel();
-      _subscription?.cancel();
+      _observer.cancel();
+      _subscription.cancel();
 
-      widget.ditto.store
-          .registerObserver(
-            widget.query,
-            arguments: widget.queryArgs ?? {},
-          )
-          .then((observer) => setState(() => _observer = observer));
+      final observer = widget.ditto.store.registerObserver(
+        widget.query,
+        arguments: widget.queryArgs ?? {},
+      );
 
-      widget.ditto.sync
-          .registerSubscription(
-            widget.query,
-            arguments: widget.queryArgs ?? {},
-          )
-          .then((subscription) => setState(() => _subscription = subscription));
+      final subscription = widget.ditto.sync.registerSubscription(
+        widget.query,
+        arguments: widget.queryArgs ?? {},
+      );
+
+      setState(() {
+        _observer = observer;
+        _subscription = subscription;
+      });
     }
   }
 
   @override
   void dispose() {
-    _observer?.cancel();
-    _subscription?.cancel();
+    _observer.cancel();
+    _subscription.cancel();
     super.dispose();
   }
 

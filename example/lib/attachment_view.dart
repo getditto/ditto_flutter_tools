@@ -29,27 +29,23 @@ class _AttachmentViewState extends State<AttachmentView> {
   @override
   void initState() {
     super.initState();
-    _init();
-  }
 
-  Future<void> _init() async {
-    await widget.ditto.store.fetchAttachment(
+    widget.ditto.store.fetchAttachment(
       widget.attachmentToken,
-      (event) {
-        return switch (event) {
-          AttachmentFetchEventProgress progress => setState(() {
-              _progress = progress.downloadedBytes / progress.totalBytes;
-            }),
-          AttachmentFetchEventCompleted completed =>
-            _complete(completed.attachment),
-          AttachmentFetchEventDeleted _ => print("deleted"),
-        };
+      (event) => switch (event) {
+        AttachmentFetchEventProgress progress => setState(() {
+            _progress = progress.downloadedBytes / progress.totalBytes;
+          }),
+        AttachmentFetchEventCompleted completed =>
+          _complete(completed.attachment),
+        AttachmentFetchEventDeleted _ => print("deleted"),
+        _ => throw Exception("Unknown event type"),
       },
     );
   }
 
   Future<void> _complete(Attachment attachment) async {
-    final bytes = await attachment.data();
+    final bytes = await attachment.data;
     // artificial delay to show blurhash
     await Future.delayed(const Duration(seconds: 2));
     setState(() => _bytes = bytes);
