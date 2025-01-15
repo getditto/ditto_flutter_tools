@@ -17,15 +17,8 @@ class _PresenceViewState extends State<PresenceView> {
   void initState() {
     super.initState();
 
-    _init();
-  }
-
-  Future<void> _init() async {
-    final observer = await widget.ditto.presence.observe((graph) {
-      setState(() => _graph = graph);
-    });
-
-    _observer = observer;
+    _observer = widget.ditto.presence
+        .observe((graph) => setState(() => _graph = graph));
   }
 
   @override

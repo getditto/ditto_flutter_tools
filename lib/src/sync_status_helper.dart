@@ -34,8 +34,8 @@ class SyncStatusHelper with ChangeNotifier {
   DateTime? _becameConnectedAt;
   DateTime? _becameDisconnectedAt;
   DateTime? _lastConnectedAt;
-  List<StoreObserver>? _observers;
-  PresenceObserver? _presenceObserver;
+  late final List<StoreObserver> _observers;
+  late final PresenceObserver _presenceObserver;
 
   var _disposeCalled = false;
 
@@ -66,14 +66,13 @@ class SyncStatusHelper with ChangeNotifier {
       _safeNotify();
     }
 
-    _observers = await _mapObservers(
+    _observers = _mapObservers(
       ditto,
       subscriptions,
       onSubscriptionChanged,
     );
 
-
-    _presenceObserver = await ditto.presence.observe((graph) {
+    _presenceObserver = ditto.presence.observe((graph) {
       final isConnectedNow = graph.localPeer.isConnectedToDittoCloud ||
           graph.remotePeers.isNotEmpty;
 
@@ -96,10 +95,10 @@ class SyncStatusHelper with ChangeNotifier {
 
     super.dispose();
 
-    await _presenceObserver?.stop();
-    final futures = _observers?.map((observer) => observer.cancel());
-    if (futures != null) {
-      await Future.wait(futures);
+    _presenceObserver.stop();
+
+    for (final observer in _observers) {
+      observer.cancel();
     }
   }
 
@@ -160,15 +159,17 @@ class SyncStatusHelper with ChangeNotifier {
   }
 }
 
-Future<List<StoreObserver>> _mapObservers(
+List<StoreObserver> _mapObservers(
   Ditto ditto,
   List<SyncSubscription> subscriptions,
   void Function(SyncSubscription) onSubscriptionChanged,
 ) =>
-    Future.wait(subscriptions.map(
-      (sub) => ditto.store.registerObserver(
-        sub.queryString,
-        arguments: sub.queryArguments,
-        onChange: (_) => onSubscriptionChanged(sub),
-      ),
-    ));
+    subscriptions
+        .map(
+          (sub) => ditto.store.registerObserver(
+            sub.queryString,
+            arguments: sub.queryArguments,
+            onChange: (_) => onSubscriptionChanged(sub),
+          ),
+        )
+        .toList();

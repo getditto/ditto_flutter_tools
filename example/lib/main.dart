@@ -15,7 +15,6 @@ import 'task_view.dart';
 const appID = "REPLACE_ME_WITH_YOUR_APP_ID";
 const token = "REPLACE_ME_WITH_YOUR_PLAYGROUND_TOKEN";
 
-
 const authAppID = "REPLACE_ME_WITH_YOUR_APP_ID";
 
 const collection = "tasks13";
@@ -23,11 +22,13 @@ const collection = "tasks13";
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await DittoLogger.setEnabled(false);
-  await DittoLogger.setMinimumLogLevel(LogLevel.error);
-  await DittoLogger.setCustomLogCallback((level, message) {
+  await Ditto.init();
+
+  DittoLogger.isEnabled = false;
+  DittoLogger.minimumLogLevel = LogLevel.error;
+  DittoLogger.customLogCallback = (level, message) {
     print("[$level] => $message");
-  });
+  };
 
   runApp(const MaterialApp(
     debugShowCheckedModeBanner: false,
@@ -64,7 +65,7 @@ class _DittoExampleState extends State<DittoExample> {
       Permission.bluetoothScan
     ].request();
 
-    final identity = await OnlinePlaygroundIdentity.create(
+    final identity = OnlinePlaygroundIdentity(
       appID: appID,
       token: token,
     );
@@ -85,23 +86,23 @@ class _DittoExampleState extends State<DittoExample> {
 
     final ditto = await Ditto.open(
       identity: identity,
-      persistenceDirectory: persistenceDirectory,
+      persistenceDirectory: "${persistenceDirectory.path}/ditto",
     );
 
-    await ditto.updateTransportConfig((config) {
+    ditto.updateTransportConfig((config) {
       config.setAllPeerToPeerEnabled(true);
       config.connect.webSocketUrls.add(
         "wss://$authAppID.cloud.ditto.live",
       );
     });
-    await ditto.setDeviceName("Flutter (${ditto.deviceName})");
+    ditto.deviceName = "Flutter (${ditto.deviceName})";
 
-    await ditto.smallPeerInfo.setEnabled(true);
-    await ditto.smallPeerInfo.setSyncScope(SmallPeerInfoSyncScope.bigPeerOnly);
+    ditto.smallPeerInfo.isEnabled = true;
+    ditto.smallPeerInfo.syncScope = SmallPeerInfoSyncScope.bigPeerOnly;
 
-    await ditto.startSync();
+    ditto.startSync();
 
-    _subscription = await ditto.sync.registerSubscription(
+    _subscription = ditto.sync.registerSubscription(
       "SELECT * FROM $collection WHERE deleted = false",
     );
 
@@ -181,9 +182,9 @@ class _DittoExampleState extends State<DittoExample> {
         value: _syncing,
         onChanged: (value) async {
           if (value) {
-            await _ditto!.startSync();
+            _ditto!.startSync();
           } else {
-            await _ditto!.stopSync();
+            _ditto!.stopSync();
           }
 
           setState(() => _syncing = value);

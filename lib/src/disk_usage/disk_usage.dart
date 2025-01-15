@@ -1,8 +1,8 @@
+import 'package:ditto_flutter_tools/src/util.dart';
 import 'package:ditto_live/ditto_live.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
-import 'package:proper_filesize/proper_filesize.dart';
 
 import '../cross_platform/cross_platform.dart';
 
@@ -21,7 +21,7 @@ class DiskUsage extends StatefulWidget {
 
 class _DiskUsageState extends State<DiskUsage> {
   late final _paths = directorySizeSummary(
-    widget.ditto.persistenceDirectoryString,
+    widget.ditto.persistenceDirectory,
   );
 
   @override
@@ -32,7 +32,7 @@ class _DiskUsageState extends State<DiskUsage> {
           ..._paths.map(
             (pair) => ListTile(
               title: Text(pair.$1),
-              trailing: Text(_humanReadableBytes(pair.$2)),
+              trailing: Text(humanReadableBytes(pair.$2)),
             ),
           )
         ],
@@ -60,7 +60,7 @@ class _DiskUsageState extends State<DiskUsage> {
         onPressed: () async {
           final path = await FilePicker.platform.getDirectoryPath();
           if (path == null) return;
-          copyDir(widget.ditto.persistenceDirectoryString, path);
+          copyDir(widget.ditto.persistenceDirectory, path);
           if (mounted) Navigator.pop(context);
           _showSnackbar("Data exported to $path");
         },
@@ -74,10 +74,3 @@ class _DiskUsageState extends State<DiskUsage> {
     );
   }
 }
-
-String _humanReadableBytes(int bytes) =>
-    ProperFilesize.generateHumanReadableFilesize(
-      bytes,
-      base: Bases.Metric,
-      decimals: 0,
-    );
