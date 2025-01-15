@@ -1,8 +1,8 @@
+import 'package:ditto_flutter_tools/src/util.dart';
 import 'package:ditto_live/ditto_live.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
-import 'package:proper_filesize/proper_filesize.dart';
 
 import '../cross_platform/cross_platform.dart';
 
@@ -32,7 +32,7 @@ class _DiskUsageState extends State<DiskUsage> {
           ..._paths.map(
             (pair) => ListTile(
               title: Text(pair.$1),
-              trailing: Text(_humanReadableBytes(pair.$2)),
+              trailing: Text(humanReadableBytes(pair.$2)),
             ),
           )
         ],
@@ -74,10 +74,3 @@ class _DiskUsageState extends State<DiskUsage> {
     );
   }
 }
-
-String _humanReadableBytes(int bytes) =>
-    ProperFilesize.generateHumanReadableFilesize(
-      bytes,
-      base: Bases.Metric,
-      decimals: 0,
-    );

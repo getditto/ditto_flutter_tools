@@ -423,14 +423,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.8"
-  proper_filesize:
-    dependency: transitive
-    description:
-      name: proper_filesize
-      sha256: bd7566ec10e0425b3b6f81691cce9a6d16c08e590ae15b2df0a1c22f432dc205
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.0.2"
   sky_engine:
     dependency: transitive
     description: flutter
