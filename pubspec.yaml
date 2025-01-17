@@ -1,6 +1,6 @@
 name: ditto_flutter_tools
 description: "Diagnostic and Debugging Tools for Ditto in Flutter"
-version: 0.0.1
+version: 0.0.2
 homepage: "https://ditto.live"
 repository: https://github.com/getditto/ditto_flutter_tools
 
