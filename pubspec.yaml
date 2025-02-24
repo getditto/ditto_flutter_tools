@@ -1,6 +1,6 @@
 name: ditto_flutter_tools
 description: "Diagnostic and Debugging Tools for Ditto in Flutter"
-version: 0.0.2
+version: 1.0.0
 homepage: "https://ditto.live"
 repository: https://github.com/getditto/ditto_flutter_tools
 
@@ -12,7 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  ditto_live: ^4.9.0-rc.3
+  ditto_live: ^4.9.1
   webview_flutter: ^4.8.0
   path: ^1.9.0
   file_picker: ^8.1.4

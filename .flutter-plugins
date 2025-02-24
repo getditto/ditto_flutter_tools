@@ -1,8 +1,12 @@
 # This is a generated file; do not edit or check into version control.
-device_info_plus=/Users/cameron/.pub-cache/hosted/pub.dev/device_info_plus-10.1.2/
-ditto_live=/Users/cameron/.pub-cache/hosted/pub.dev/ditto_live-4.8.0-publicpreview.2/
-file_picker=/Users/cameron/.pub-cache/hosted/pub.dev/file_picker-8.1.4/
-flutter_plugin_android_lifecycle=/Users/cameron/.pub-cache/hosted/pub.dev/flutter_plugin_android_lifecycle-2.0.22/
-webview_flutter=/Users/cameron/.pub-cache/hosted/pub.dev/webview_flutter-4.8.0/
-webview_flutter_android=/Users/cameron/.pub-cache/hosted/pub.dev/webview_flutter_android-3.16.8/
-webview_flutter_wkwebview=/Users/cameron/.pub-cache/hosted/pub.dev/webview_flutter_wkwebview-3.14.0/
+ditto_live=/Users/brianplattenburg/.pub-cache/hosted/pub.dev/ditto_live-4.9.1/
+file_picker=/Users/brianplattenburg/.pub-cache/hosted/pub.dev/file_picker-8.1.7/
+flutter_plugin_android_lifecycle=/Users/brianplattenburg/.pub-cache/hosted/pub.dev/flutter_plugin_android_lifecycle-2.0.24/
+path_provider=/Users/brianplattenburg/.pub-cache/hosted/pub.dev/path_provider-2.1.5/
+path_provider_android=/Users/brianplattenburg/.pub-cache/hosted/pub.dev/path_provider_android-2.2.15/
+path_provider_foundation=/Users/brianplattenburg/.pub-cache/hosted/pub.dev/path_provider_foundation-2.4.1/
+path_provider_linux=/Users/brianplattenburg/.pub-cache/hosted/pub.dev/path_provider_linux-2.2.1/
+path_provider_windows=/Users/brianplattenburg/.pub-cache/hosted/pub.dev/path_provider_windows-2.3.0/
+webview_flutter=/Users/brianplattenburg/.pub-cache/hosted/pub.dev/webview_flutter-4.10.0/
+webview_flutter_android=/Users/brianplattenburg/.pub-cache/hosted/pub.dev/webview_flutter_android-4.3.2/
+webview_flutter_wkwebview=/Users/brianplattenburg/.pub-cache/hosted/pub.dev/webview_flutter_wkwebview-3.18.2/
