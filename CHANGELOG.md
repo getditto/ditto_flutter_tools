@@ -1,3 +1,7 @@
+## 1.0.0
+
+Updates to use the GA release of the Ditto SDK
+
 ## 0.0.2
 
 Updates to use the latest Ditto SDK release candidate version (4.9.0-rc.3)
