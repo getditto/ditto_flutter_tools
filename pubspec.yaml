@@ -1,6 +1,6 @@
 name: ditto_flutter_tools
-description: "Diagnostic and Debugging Tools for Ditto in Flutter"
-version: 1.0.0
+description: "Diagnostic and Debugging Tools for the Ditto Flutter SDK."
+version: 2.0.0
 homepage: "https://ditto.live"
 repository: https://github.com/getditto/ditto_flutter_tools
 
@@ -12,7 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  ditto_live: ^4.9.1
+  ditto_live: ^4.10.0 # TODO move to 4.10.1 when available
   webview_flutter: ^4.8.0
   path: ^1.9.0
   file_picker: ^8.1.4
@@ -30,11 +30,11 @@ dev_dependencies:
 flutter:
 
   # To add assets to your package, add an assets section, like this:
-  assets:
-    - lib/src/presence_assets/index.html
-    - lib/src/presence_assets/main.js
-    - lib/src/presence_assets/main.js.LICENSE.txt
-    - lib/src/presence_assets/main.css
+  # assets:
+  #   - lib/src/presence_assets/index.html
+  #   - lib/src/presence_assets/main.js
+  #   - lib/src/presence_assets/main.js.LICENSE.txt
+  #   - lib/src/presence_assets/main.css
   #
   # For details regarding assets in packages, see
   # https://flutter.dev/assets-and-images/#from-packages

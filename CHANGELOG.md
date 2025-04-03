@@ -1,3 +1,8 @@
+## 2.0.0
+
+- Updates to use the <4.10.0> release of the Ditto SDK
+- Adds <new stuff>
+
 ## 1.0.0
 
 Updates to use the GA release of the Ditto SDK
