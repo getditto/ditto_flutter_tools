@@ -2,8 +2,7 @@ import 'package:ditto_live/ditto_live.dart';
 import 'package:flutter/material.dart';
 
 import 'attachment_view.dart';
-import 'main.dart';
-import 'task.dart';
+import '../models/task.dart';
 
 class TaskView extends StatelessWidget {
   final Ditto ditto;
@@ -27,7 +26,7 @@ class TaskView extends StatelessWidget {
       trailing: Checkbox(
         value: task.done,
         onChanged: (value) => ditto.store.execute(
-          "UPDATE $collection SET done = $value WHERE _id = '${task.id}'",
+          "UPDATE tasks SET done = $value WHERE _id = '${task.id}'",
         ),
       ),
       leading: tok == null

@@ -4,8 +4,8 @@ import 'package:blurhash_dart/blurhash_dart.dart';
 import 'package:ditto_live/ditto_live.dart';
 import 'package:flutter/material.dart';
 
-import 'image.dart';
-import 'task.dart';
+import '../image.dart';
+import '../models/task.dart';
 
 Future<(Task, AttachmentToken)?> showAddTaskDialog(
   BuildContext context,

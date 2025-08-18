@@ -2,33 +2,28 @@
 
 import 'package:ditto_flutter_tools/ditto_flutter_tools.dart';
 import 'package:ditto_live/ditto_live.dart';
-import 'package:example/presence.dart';
+import 'package:example/widgets/presence.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
+
 import 'package:permission_handler/permission_handler.dart';
 
-import 'dialog.dart';
-import 'dql_builder.dart';
-import 'task.dart';
-import 'task_view.dart';
+import 'providers/ditto_provider.dart';
+import 'services/tasks_service.dart';
 
-const appID = "REPLACE_ME_WITH_YOUR_APP_ID";
-const token = "REPLACE_ME_WITH_YOUR_PLAYGROUND_TOKEN";
+import 'widgets/dialog.dart';
+import 'dql_builder.dart';
+import 'models/task.dart';
+import 'widgets/task_view.dart';
+
+const appID = "a48453d8-c2c3-495b-9f36-80189bf5e135";
+const token = "8304ca7f-e843-47ed-a0d8-32cc5ff1be7e";
+const authUrl = "https://m1tpgv.cloud.dittolive.app";
+const websocketUrl = "wss://m1tpgv.cloud.dittolive.app";
 
 const authAppID = "REPLACE_ME_WITH_YOUR_APP_ID";
 
-const collection = "tasks13";
-
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  await Ditto.init();
-
-  DittoLogger.isEnabled = false;
-  DittoLogger.minimumLogLevel = LogLevel.error;
-  DittoLogger.customLogCallback = (level, message) {
-    print("[$level] => $message");
-  };
 
   runApp(const MaterialApp(
     debugShowCheckedModeBanner: false,
@@ -44,11 +39,11 @@ class DittoExample extends StatefulWidget {
 }
 
 class _DittoExampleState extends State<DittoExample> {
-  Ditto? _ditto;
+  DittoProvider? _dittoProvider;
+  TaskService? _taskService;
+
   var _syncing = true;
   int _pageIndex = 0;
-
-  late final SyncSubscription _subscription;
 
   @override
   void initState() {
@@ -58,79 +53,28 @@ class _DittoExampleState extends State<DittoExample> {
   }
 
   Future<void> _initDitto() async {
-    await [
-      Permission.bluetoothConnect,
-      Permission.bluetoothAdvertise,
-      Permission.nearbyWifiDevices,
-      Permission.bluetoothScan
-    ].request();
+    final dittoProvider = DittoProvider();
+    final taskService = TaskService();
 
-    final identity = OnlinePlaygroundIdentity(
-      appID: appID,
-      token: token,
-    );
+    await dittoProvider.initialize(appID, token, authUrl, websocketUrl);
+    await taskService.initialize(dittoProvider);
 
-    // final identity = await OnlineWithAuthenticationIdentity.create(
-    //   appID: authAppID,
-    //   authenticationHandler: AuthenticationHandler(
-    //     authenticationExpiringSoon: (authenticator, secondsRemaining) async {
-    //       await authenticator.login(token: token, provider: "auth-webhook");
-    //     },
-    //     authenticationRequired: (authenticator) async {
-    //       await authenticator.login(token: token, provider: "auth-webhook");
-    //     },
-    //   ),
-    // );
-
-    final persistenceDirectory = await getApplicationDocumentsDirectory();
-
-    final ditto = await Ditto.open(
-      identity: identity,
-      persistenceDirectory: "${persistenceDirectory.path}/ditto",
-    );
-
-    ditto.updateTransportConfig((config) {
-      config.setAllPeerToPeerEnabled(true);
-      config.connect.webSocketUrls.add(
-        "wss://$authAppID.cloud.ditto.live",
-      );
-    });
-    ditto.deviceName = "Flutter (${ditto.deviceName})";
-
-    ditto.smallPeerInfo.isEnabled = true;
-    ditto.smallPeerInfo.syncScope = SmallPeerInfoSyncScope.bigPeerOnly;
-
-    ditto.startSync();
-
-    _subscription = ditto.sync.registerSubscription(
-      "SELECT * FROM $collection WHERE deleted = false",
-    );
-
-    setState(() => _ditto = ditto);
+    setState(() => _dittoProvider = dittoProvider);
+    setState(() => _taskService = taskService);
   }
 
   Future<void> _addTask() async {
-    final pair = await showAddTaskDialog(context, _ditto!);
+    if (_dittoProvider == null || _taskService == null) return;
+    final pair = await showAddTaskDialog(context, _dittoProvider!.ditto!);
     if (pair == null) return;
     final (task, attachment) = pair;
-
-    await _ditto!.store.execute(
-      "INSERT INTO COLLECTION $collection (${Task.schema}) DOCUMENTS (:task)",
-      arguments: {
-        "task": {
-          ...task.toJson(),
-          "image": attachment,
-          // "image": { "_id": asasd, "_ditto_internal_...": 2},
-        },
-      },
-    );
+    await _taskService!.addTask(task.toJson(), attachment);
   }
 
   @override
   Widget build(BuildContext context) {
-    final ditto = _ditto;
-
-    if (ditto == null) return _loading;
+    final dittoProvider = _dittoProvider;
+    if (dittoProvider == null) return _loading;
 
     return Scaffold(
       appBar: AppBar(title: const Text("Ditto Tasks")),
@@ -146,10 +90,10 @@ class _DittoExampleState extends State<DittoExample> {
               Expanded(child: _tasksList),
             ],
           ),
-          PresenceView(ditto: _ditto!),
+          PresenceView(dittoProvider: _dittoProvider!),
           SyncStatusView(
-            ditto: _ditto!,
-            subscriptions: [_subscription],
+            ditto: _dittoProvider!.ditto!,
+            subscriptions: [_taskService!.taskSubscription!],
           ),
         ],
       ),
@@ -182,9 +126,9 @@ class _DittoExampleState extends State<DittoExample> {
         value: _syncing,
         onChanged: (value) async {
           if (value) {
-            _ditto!.startSync();
+            _dittoProvider!.ditto!.startSync();
           } else {
-            _ditto!.stopSync();
+            _dittoProvider!.ditto!.stopSync();
           }
 
           setState(() => _syncing = value);

@@ -32,6 +32,6 @@ Map<String, dynamic> _$ConnectionToJson(Connection instance) =>
 const _$ConnectionTypeEnumMap = {
   ConnectionType.bluetooth: 'Bluetooth',
   ConnectionType.accessPoint: 'AccessPoint',
-  ConnectionType.p2pWifi: 'P2pWifi',
+  ConnectionType.p2pWifi: 'P2PWifi',
   ConnectionType.webSocket: 'WebSocket',
 };
