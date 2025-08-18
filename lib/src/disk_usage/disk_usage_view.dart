@@ -6,29 +6,24 @@ import 'package:path/path.dart' as p;
 
 import '../cross_platform/cross_platform.dart';
 
-class DiskUsage extends StatefulWidget {
-  static Future<void> show(BuildContext context, Ditto ditto) => showDialog(
-        context: context,
-        builder: (context) => DiskUsage(ditto: ditto),
-      );
-
+class DiskUsageView extends StatefulWidget {
   final Ditto ditto;
-  const DiskUsage({super.key, required this.ditto});
+  const DiskUsageView({super.key, required this.ditto});
 
   @override
-  State<DiskUsage> createState() => _DiskUsageState();
+  State<DiskUsageView> createState() => _DiskUsageViewState();
 }
 
-class _DiskUsageState extends State<DiskUsage> {
+class _DiskUsageViewState extends State<DiskUsageView> {
   late final _paths = directorySizeSummary(
     widget.ditto.persistenceDirectory,
   );
 
   @override
-  Widget build(BuildContext context) => SimpleDialog(
-        title: const Text("Ditto Disk Usage"),
+  Widget build(BuildContext context) => ListView(
         children: [
           _buttonBar,
+          const Divider(),
           ..._paths.map(
             (pair) => ListTile(
               title: Text(pair.$1),
@@ -38,7 +33,16 @@ class _DiskUsageState extends State<DiskUsage> {
         ],
       );
 
-  Widget get _buttonBar => ButtonBar(children: [_exportLogs, _exportData]);
+  Widget get _buttonBar => Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          children: [
+            Expanded(child: _exportLogs),
+            const SizedBox(width: 16),
+            Expanded(child: _exportData),
+          ],
+        ),
+      );
 
   Widget get _exportLogs => OutlinedButton.icon(
         label: const Text("Export Logs"),
@@ -49,7 +53,6 @@ class _DiskUsageState extends State<DiskUsage> {
           if (dir == null) return;
           final path = p.join(dir, "ditto_log.txt");
           await DittoLogger.exportLogs(path);
-          if (mounted) Navigator.pop(context);
           _showSnackbar("Logs exported to $path");
         },
       );
@@ -61,7 +64,6 @@ class _DiskUsageState extends State<DiskUsage> {
           final path = await FilePicker.platform.getDirectoryPath();
           if (path == null) return;
           copyDir(widget.ditto.persistenceDirectory, path);
-          if (mounted) Navigator.pop(context);
           _showSnackbar("Data exported to $path");
         },
       );

@@ -84,7 +84,7 @@ class _SyncStatusViewState extends State<SyncStatusView> {
                 subtitle: Text(
                   "Last updated: ${_date(_helper.lastUpdatedAt(sub))}",
                 ),
-                leading: _statusIcon(_helper.statusFor(sub)),
+                leading: _statusIcon(_helper.statusFor(sub), context),
               );
             },
           ),
@@ -94,7 +94,7 @@ class _SyncStatusViewState extends State<SyncStatusView> {
   Widget get _overallStatus => ExpansionTile(
         title: const Text("Sync Status"),
         subtitle: Text("${_helper.subscriptions.length} Subscriptions"),
-        leading: _statusIcon(_helper.overallStatus),
+        leading: _statusIcon(_helper.overallStatus, context),
         children: [
           ListTile(
             title: Text("Connected: ${_helper.isConnected}"),
@@ -113,26 +113,26 @@ String _date(DateTime? date) => switch (date) {
       null => "Never",
     };
 
-Widget _statusIcon(SyncStatus status) => switch (status) {
-      SyncStatus.disconnected => const Tooltip(
+Widget _statusIcon(SyncStatus status, BuildContext context) => switch (status) {
+      SyncStatus.disconnected => Tooltip(
           message: "Disconnected",
           child: Icon(
             Icons.sync_disabled,
-            color: Colors.red,
+            color: Theme.of(context).colorScheme.error,
           ),
         ),
-      SyncStatus.connectedSyncing => const Tooltip(
+      SyncStatus.connectedSyncing => Tooltip(
           message: "Connected (Syncing)",
           child: Icon(
             Icons.sync,
-            color: Colors.green,
+            color: Theme.of(context).colorScheme.secondary,
           ),
         ),
-      SyncStatus.connectedIdle => const Tooltip(
+      SyncStatus.connectedIdle => Tooltip(
           message: "Connected (Idle)",
           child: Icon(
             Icons.hourglass_empty,
-            color: Colors.orange,
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.7),
           ),
         ),
     };

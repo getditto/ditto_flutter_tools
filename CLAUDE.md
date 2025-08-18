@@ -1,7 +1,7 @@
 # Ditto Flutter Tools
 
 ## Project Overview
-Flutter package providing diagnostic and debugging tools for Ditto (peer-to-peer database) applications. Currently on branch `cx-144-permissions-health`.
+Flutter package providing diagnostic and debugging tools for Ditto (peer-to-peer database) applications. 
 
 ## Tech Stack
 - **Framework**: Flutter (>=1.17.0)
@@ -26,11 +26,7 @@ Flutter package providing diagnostic and debugging tools for Ditto (peer-to-peer
 ### Example App (`/example`)
 Full Flutter application demonstrating package usage:
 - `lib/main.dart` - Main example app
-- `lib/task.dart`, `task.g.dart` - Task model with code generation
-- `lib/task_view.dart` - Task UI implementation
-- `lib/attachment_view.dart` - Attachment handling
 - `lib/presence.dart` - Presence functionality demo
-- `lib/dql_builder.dart` - DQL query builder
 - Platform directories: `android/`, `ios/`, `macos/`, `linux/`, `windows/`, `web/`
 
 ## Key Features
@@ -83,7 +79,6 @@ flutter build macos
 ## Important Notes
 
 ### Branch Information
-- Current branch: `cx-144-permissions-health`
 - Main branch for PRs: `main`
 
 ### Package Assets

@@ -27,11 +27,6 @@ class DittoProvider {
     String authUrl,
     String websocketUrl,
   ) async {
-    DittoLogger.isEnabled = false;
-    DittoLogger.minimumLogLevel = LogLevel.error;
-    DittoLogger.customLogCallback = (level, message) {
-      print("[$level] => $message");
-    };
     // Note: macOS handles Bluetooth permissions differently via entitlements
     if (!kIsWeb) {
       await [
@@ -42,8 +37,15 @@ class DittoProvider {
       ].request();
     }
 
-    // Initialize Ditto first
+    // Initialize Ditto first - this must be called before any other Ditto operations
     await Ditto.init();
+
+    // Now we can safely configure logging
+    DittoLogger.isEnabled = false;
+    DittoLogger.minimumLogLevel = LogLevel.error;
+    DittoLogger.customLogCallback = (level, message) {
+      print("[$level] => $message");
+    };
 
     final persistenceDirectory = await getApplicationDocumentsDirectory();
 
