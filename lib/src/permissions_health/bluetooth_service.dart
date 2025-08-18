@@ -148,61 +148,11 @@ class BluetoothStatusService {
       final adapterState = currentAdapterState;
       info['adapterState'] = adapterState;
       info['adapterStateString'] = bluetoothStateString;
-      
-      // PHY support information (Android-specific)
-      if (Platform.isAndroid) {
-        try {
-          final phySupport = await FlutterBluePlus.getPhySupport();
-          info['phySupport'] = phySupport;
-          info['phySupportDetails'] = _formatAndroidPhySupport(phySupport);
-        } catch (e) {
-          info['phySupport'] = null;
-          info['phySupportDetails'] = 'PHY support query failed';
-        }
-      } else {
-        // For non-Android platforms
-        info['phySupportDetails'] = 'PHY support: Not available on this platform';
-      }
-      
     } catch (e) {
       info['error'] = 'Failed to get Bluetooth info: $e';
     }
     
     return info;
-  }
-
-  /// Format Android PHY support information for display
-  String _formatAndroidPhySupport(dynamic phySupport) {
-    if (phySupport == null) {
-      return 'No PHY support information';
-    }
-    
-    // The phySupport is a list of PHY types on Android
-    // We'll format it as a string since we can't use the enum on other platforms
-    try {
-      final List<dynamic> phyList = phySupport as List<dynamic>;
-      if (phyList.isEmpty) {
-        return 'No PHY support available';
-      }
-      
-      final supportedPhys = phyList.map((phy) {
-        // Convert the PHY enum to string representation
-        final phyString = phy.toString();
-        if (phyString.contains('le1m')) {
-          return 'LE 1M';
-        } else if (phyString.contains('le2m')) {
-          return 'LE 2M';
-        } else if (phyString.contains('leCoded')) {
-          return 'LE Coded';
-        } else {
-          return phyString;
-        }
-      }).toList();
-      
-      return 'Supported PHYs: ${supportedPhys.join(', ')}';
-    } catch (e) {
-      return 'PHY support information unavailable';
-    }
   }
 
   /// Release a subscriber from the service

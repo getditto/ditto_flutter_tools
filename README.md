@@ -70,26 +70,12 @@ When permissions are not granted or services are disabled, the view provides act
 
 ### Dependencies
 
-The `PermissionsHealthView` uses the `permission_handler` package to check and request permissions. Make sure your app includes the necessary platform-specific configurations:
+The `PermissionsHealthView` uses the `permission_handler` package to check and request permissions. Make sure your app includes the necessary platform-specific configurations based on the Ditto documentation at:[https://docs.ditto.live/sdk/latest/install-guides/flutter#step-1%3A-add-the-ditto-dependency](https://docs.ditto.live/sdk/latest/install-guides/flutter#step-1%3A-add-the-ditto-dependency)
 
-#### iOS Configuration (Info.plist)
-```xml
-<key>NSBluetoothPeripheralUsageDescription</key>
-<string>This app uses Bluetooth to connect with nearby devices</string>
-<key>NSLocationWhenInUseUsageDescription</key>
-<string>This app uses location to discover nearby devices</string>
-```
 
-#### Android Configuration (AndroidManifest.xml)
-```xml
-<uses-permission android:name="android.permission.BLUETOOTH" />
-<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-<uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
-<uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-<uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
-<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-<uses-permission android:name="android.permission.NEARBY_WIFI_DEVICES" />
-```
+> [!WARNING]  
+>This feature uses the permissions_handler package to check and request permissions.  For the UI to fully function, you must follow the instructions in the [permissions_handler README](https://pub.dev/packages/permission_handler).  Scroll to the Setup section and follow the instructions for iOS which requires to modify the Podfile in your ios directory.  You will have to modify the post_install block to add in a flag to enable the Bluetooth permission so it can detect the Bluetooth status.  Failure to do so will result in the Bluetooth status not being detected.
+>
 
 ## `SyncStatusHelper` and `SyncStatusView`
 
