@@ -64,6 +64,9 @@ flutter analyze
 flutter format .
 ```
 
+### Code Quality Rule
+**IMPORTANT**: Always run `flutter analyze` before completing any code changes to ensure no warnings or errors are introduced. All warnings must be fixed before code completion.
+
 ### Example App
 ```bash
 # Run example app

@@ -315,44 +315,88 @@ class _MainListView extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
               border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.3)),
             ),
-            child: ListTile(
-              leading: Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.tertiary,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  Icons.storage,
-                  color: Theme.of(context).colorScheme.onTertiary,
-                  size: 20,
-                ),
-              ),
-              title: const Text("Disk Usage"),
-              trailing: Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurfaceVariant),
-              onTap: () {
-                Navigator.of(context).push(
-                  PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) => 
-                        Material(
-                          child: Scaffold(
-                            appBar: AppBar(title: const Text("Disk Usage")),
-                            body: DiskUsageView(ditto: dittoProvider.ditto!),
-                          ),
-                        ),
-                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                      return SlideTransition(
-                        position: Tween<Offset>(
-                          begin: const Offset(1.0, 0.0),
-                          end: Offset.zero,
-                        ).animate(animation),
-                        child: child,
-                      );
-                    },
+            child: Column(
+              children: [
+                ListTile(
+                  leading: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: Colors.purple,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.health_and_safety,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
-                );
-              },
+                  title: const Text("Permissions Health"),
+                  trailing: Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) => 
+                            Material(
+                              child: Scaffold(
+                                appBar: AppBar(title: const Text("Permissions Health")),
+                                body: const PermissionsHealthView(),
+                              ),
+                            ),
+                        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                          return SlideTransition(
+                            position: Tween<Offset>(
+                              begin: const Offset(1.0, 0.0),
+                              end: Offset.zero,
+                            ).animate(animation),
+                            child: child,
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
+                Divider(height: 1, color: Theme.of(context).colorScheme.outline.withOpacity(0.3), indent: 56),
+                ListTile(
+                  leading: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.tertiary,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      Icons.storage,
+                      color: Theme.of(context).colorScheme.onTertiary,
+                      size: 20,
+                    ),
+                  ),
+                  title: const Text("Disk Usage"),
+                  trailing: Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) => 
+                            Material(
+                              child: Scaffold(
+                                appBar: AppBar(title: const Text("Disk Usage")),
+                                body: DiskUsageView(ditto: dittoProvider.ditto!),
+                              ),
+                            ),
+                        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                          return SlideTransition(
+                            position: Tween<Offset>(
+                              begin: const Offset(1.0, 0.0),
+                              end: Offset.zero,
+                            ).animate(animation),
+                            child: child,
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
           ),
         ],
