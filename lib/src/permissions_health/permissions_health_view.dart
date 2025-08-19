@@ -47,6 +47,9 @@ class _PermissionsHealthViewState extends State<PermissionsHealthView> {
       // Initialize Bluetooth service
       await _bluetoothService.initialize();
 
+      // Small delay to ensure Bluetooth service is fully ready on iOS
+      await Future.delayed(const Duration(milliseconds: 100));
+
       // Get initial states
       await _loadInitialData();
 

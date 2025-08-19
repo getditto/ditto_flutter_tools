@@ -76,8 +76,15 @@ class BluetoothStatusService {
         return BluetoothAdapterState.unavailable;
       }
       
-      // Return current state
-      return currentAdapterState;
+      // On iOS, the initial state might be unknown, so wait for a valid state
+      var state = currentAdapterState;
+      if (state == BluetoothAdapterState.unknown) {
+        // Wait a bit for the state to be determined
+        await Future.delayed(const Duration(milliseconds: 200));
+        state = currentAdapterState;
+      }
+      
+      return state;
     } catch (e) {
       // If there's an error, assume unavailable (common on emulators)
       return BluetoothAdapterState.unavailable;
