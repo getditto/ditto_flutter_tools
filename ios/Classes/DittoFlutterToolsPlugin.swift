@@ -26,7 +26,7 @@ public class DittoFlutterToolsPlugin: NSObject, FlutterPlugin {
     // Check actual WiFi status using NWPathMonitor on background queue
     let monitor = NWPathMonitor(requiredInterfaceType: .wifi)
     let queue = DispatchQueue.global(qos: .background)
-    let resultSent: Bool = false
+    var resultSent: Bool = false
 
     monitor.pathUpdateHandler = { path in
       let isWifiAvailable = path.status == .satisfied && path.usesInterfaceType(.wifi)
