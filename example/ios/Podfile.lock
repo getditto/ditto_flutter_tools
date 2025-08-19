@@ -1,4 +1,6 @@
 PODS:
+  - ditto_flutter_tools (1.0.0):
+    - Flutter
   - ditto_live (4.9.0-rc.1):
     - DittoFlutterIOS (= 4.9.0-rc.1)
     - Flutter
@@ -56,6 +58,7 @@ PODS:
     - Flutter
 
 DEPENDENCIES:
+  - ditto_flutter_tools (from `.symlinks/plugins/ditto_flutter_tools/ios`)
   - ditto_live (from `.symlinks/plugins/ditto_live/ios`)
   - file_picker (from `.symlinks/plugins/file_picker/ios`)
   - Flutter (from `Flutter`)
@@ -74,6 +77,8 @@ SPEC REPOS:
     - SwiftyGif
 
 EXTERNAL SOURCES:
+  ditto_flutter_tools:
+    :path: ".symlinks/plugins/ditto_flutter_tools/ios"
   ditto_live:
     :path: ".symlinks/plugins/ditto_live/ios"
   file_picker:
@@ -92,6 +97,7 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/webview_flutter_wkwebview/ios"
 
 SPEC CHECKSUMS:
+  ditto_flutter_tools: a02becf2c704015fa6a02d2aca2a78020c78f746
   ditto_live: 1e49c14f5130ce36a58c9ead05177c2cb3ca884a
   DittoFlutterIOS: e4d2cc551e9c47d6a3a9fdefaa231bbbb6564d01
   DKImagePickerController: 946cec48c7873164274ecc4624d19e3da4c1ef3c

@@ -7,10 +7,10 @@ import 'package:flutter/material.dart';
 
 import 'providers/ditto_provider.dart';
 
-const appID = "a48453d8-c2c3-495b-9f36-80189bf5e135";
-const token = "8304ca7f-e843-47ed-a0d8-32cc5ff1be7e";
-const authUrl = "https://m1tpgv.cloud.dittolive.app";
-const websocketUrl = "wss://m1tpgv.cloud.dittolive.app";
+const appID = "REPLACE_ME_WITH_YOUR_APP_ID";
+const token = "REPLACE_ME_WITH_YOUR_ONLINE_PLAYGROUND_TOKEN";
+const authUrl = "REPLACE_ME_WITH_YOUR_AUTH_URL";
+const websocketUrl = "REPLACE_ME_WITH_WEBSOCKET_URL";
 
 const authAppID = "REPLACE_ME_WITH_YOUR_APP_ID";
 
@@ -94,10 +94,10 @@ class _DittoExampleState extends State<DittoExample> {
       // Setup ditto provider
       final dittoProvider = DittoProvider();
       await dittoProvider.initialize(appID, token, authUrl, websocketUrl);
-      
+
       // Only create subscription service after Ditto is fully initialized
       final subscriptionService = SubscriptionService(dittoProvider);
-      
+
       setState(() {
         _dittoProvider = dittoProvider;
         _subscriptionService = subscriptionService;
@@ -124,28 +124,30 @@ class _DittoExampleState extends State<DittoExample> {
       return _buildError(_errorMessage);
     }
 
-    return _MainListView(dittoProvider: dittoProvider, subscriptionService: _subscriptionService!);
+    return _MainListView(
+        dittoProvider: dittoProvider,
+        subscriptionService: _subscriptionService!);
   }
 
   Widget get _loading => MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: DittoApp._lightTheme,
-      darkTheme: DittoApp._darkTheme,
-      themeMode: ThemeMode.system,
-      home: Scaffold(
-        appBar: AppBar(title: const Text("Ditto Tools")),
-        body: const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 16),
-              Text("Initializing Ditto..."),
-            ],
+        debugShowCheckedModeBanner: false,
+        theme: DittoApp._lightTheme,
+        darkTheme: DittoApp._darkTheme,
+        themeMode: ThemeMode.system,
+        home: Scaffold(
+          appBar: AppBar(title: const Text("Ditto Tools")),
+          body: const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text("Initializing Ditto..."),
+              ],
+            ),
           ),
         ),
-      ),
-    );
+      );
 
   Widget _buildError(String? errorMessage) {
     return MaterialApp(
@@ -220,7 +222,11 @@ class _MainListView extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: Theme.of(context).textTheme.labelLarge?.color?.withOpacity(0.6),
+                color: Theme.of(context)
+                    .textTheme
+                    .labelLarge
+                    ?.color
+                    ?.withOpacity(0.6),
                 letterSpacing: 0.5,
               ),
             ),
@@ -230,7 +236,9 @@ class _MainListView extends StatelessWidget {
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.3)),
+              border: Border.all(
+                  color:
+                      Theme.of(context).colorScheme.outline.withOpacity(0.3)),
             ),
             child: Column(
               children: [
@@ -249,18 +257,20 @@ class _MainListView extends StatelessWidget {
                     ),
                   ),
                   title: const Text("Peers List"),
-                  trailing: Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  trailing: Icon(Icons.chevron_right,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant),
                   onTap: () {
                     Navigator.of(context).push(
                       PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) => 
+                        pageBuilder: (context, animation, secondaryAnimation) =>
                             Material(
-                              child: Scaffold(
-                                appBar: AppBar(title: const Text("Peers List")),
-                                body: PresenceView(dittoProvider: dittoProvider),
-                              ),
-                            ),
-                        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                          child: Scaffold(
+                            appBar: AppBar(title: const Text("Peers List")),
+                            body: PresenceView(dittoProvider: dittoProvider),
+                          ),
+                        ),
+                        transitionsBuilder:
+                            (context, animation, secondaryAnimation, child) {
                           return SlideTransition(
                             position: Tween<Offset>(
                               begin: const Offset(1.0, 0.0),
@@ -273,7 +283,11 @@ class _MainListView extends StatelessWidget {
                     );
                   },
                 ),
-                Divider(height: 1, color: Theme.of(context).colorScheme.outline.withOpacity(0.3), indent: 56),
+                Divider(
+                    height: 1,
+                    color:
+                        Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                    indent: 56),
                 ListTile(
                   leading: Container(
                     width: 32,
@@ -289,21 +303,24 @@ class _MainListView extends StatelessWidget {
                     ),
                   ),
                   title: const Text("Sync Status"),
-                  trailing: Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  trailing: Icon(Icons.chevron_right,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant),
                   onTap: () {
                     Navigator.of(context).push(
                       PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) => 
+                        pageBuilder: (context, animation, secondaryAnimation) =>
                             Material(
-                              child: Scaffold(
-                                appBar: AppBar(title: const Text("Sync Status")),
-                                body: SyncStatusView(
-                                  ditto: dittoProvider.ditto!,
-                                  subscriptions: subscriptionService.getSubscriptions(),
-                                ),
-                              ),
+                          child: Scaffold(
+                            appBar: AppBar(title: const Text("Sync Status")),
+                            body: SyncStatusView(
+                              ditto: dittoProvider.ditto!,
+                              subscriptions:
+                                  subscriptionService.getSubscriptions(),
                             ),
-                        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                          ),
+                        ),
+                        transitionsBuilder:
+                            (context, animation, secondaryAnimation, child) {
                           return SlideTransition(
                             position: Tween<Offset>(
                               begin: const Offset(1.0, 0.0),
@@ -328,7 +345,11 @@ class _MainListView extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: Theme.of(context).textTheme.labelLarge?.color?.withOpacity(0.6),
+                color: Theme.of(context)
+                    .textTheme
+                    .labelLarge
+                    ?.color
+                    ?.withOpacity(0.6),
                 letterSpacing: 0.5,
               ),
             ),
@@ -338,7 +359,9 @@ class _MainListView extends StatelessWidget {
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.3)),
+              border: Border.all(
+                  color:
+                      Theme.of(context).colorScheme.outline.withOpacity(0.3)),
             ),
             child: Column(
               children: [
@@ -357,18 +380,21 @@ class _MainListView extends StatelessWidget {
                     ),
                   ),
                   title: const Text("Permissions Health"),
-                  trailing: Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  trailing: Icon(Icons.chevron_right,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant),
                   onTap: () {
                     Navigator.of(context).push(
                       PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) => 
+                        pageBuilder: (context, animation, secondaryAnimation) =>
                             Material(
-                              child: Scaffold(
-                                appBar: AppBar(title: const Text("Permissions Health")),
-                                body: const PermissionsHealthView(),
-                              ),
-                            ),
-                        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                          child: Scaffold(
+                            appBar:
+                                AppBar(title: const Text("Permissions Health")),
+                            body: const PermissionsHealthView(),
+                          ),
+                        ),
+                        transitionsBuilder:
+                            (context, animation, secondaryAnimation, child) {
                           return SlideTransition(
                             position: Tween<Offset>(
                               begin: const Offset(1.0, 0.0),
@@ -381,7 +407,11 @@ class _MainListView extends StatelessWidget {
                     );
                   },
                 ),
-                Divider(height: 1, color: Theme.of(context).colorScheme.outline.withOpacity(0.3), indent: 56),
+                Divider(
+                    height: 1,
+                    color:
+                        Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                    indent: 56),
                 ListTile(
                   leading: Container(
                     width: 32,
@@ -397,18 +427,20 @@ class _MainListView extends StatelessWidget {
                     ),
                   ),
                   title: const Text("Disk Usage"),
-                  trailing: Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  trailing: Icon(Icons.chevron_right,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant),
                   onTap: () {
                     Navigator.of(context).push(
                       PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) => 
+                        pageBuilder: (context, animation, secondaryAnimation) =>
                             Material(
-                              child: Scaffold(
-                                appBar: AppBar(title: const Text("Disk Usage")),
-                                body: DiskUsageView(ditto: dittoProvider.ditto!),
-                              ),
-                            ),
-                        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                          child: Scaffold(
+                            appBar: AppBar(title: const Text("Disk Usage")),
+                            body: DiskUsageView(ditto: dittoProvider.ditto!),
+                          ),
+                        ),
+                        transitionsBuilder:
+                            (context, animation, secondaryAnimation, child) {
                           return SlideTransition(
                             position: Tween<Offset>(
                               begin: const Offset(1.0, 0.0),

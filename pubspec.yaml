@@ -30,6 +30,13 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  plugin:
+    platforms:
+      android:
+        package: live.ditto.ditto_flutter_tools
+        pluginClass: DittoFlutterToolsPlugin
+      ios:
+        pluginClass: DittoFlutterToolsPlugin
 
   # To add assets to your package, add an assets section, like this:
   assets:

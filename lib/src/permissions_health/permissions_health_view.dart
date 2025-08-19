@@ -6,6 +6,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'bluetooth_service.dart' show BluetoothStatusService;
 import 'bluetooth_permissions_service.dart';
+import 'wifi_permissions_cross_platform.dart';
 
 class PermissionsHealthView extends StatefulWidget {
   const PermissionsHealthView({super.key});
@@ -22,6 +23,8 @@ class _PermissionsHealthViewState extends State<PermissionsHealthView> {
   BluetoothAdapterState? _bluetoothAdapterState;
   bool? _isBluetoothSupported;
   Map<String, dynamic>? _detailedBluetoothInfo;
+  WifiPermissionResult? _wifiPermissionResult;
+  WifiAwarePermissionResult? _wifiAwarePermissionResult;
   bool _isLoading = true;
 
   @override
@@ -73,6 +76,10 @@ class _PermissionsHealthViewState extends State<PermissionsHealthView> {
       final adapterState = await _bluetoothService.getFreshAdapterState();
       final isSupported = await _bluetoothService.isBluetoothSupported();
       final detailedInfo = await _bluetoothService.getDetailedBluetoothInfo();
+      
+      // Load WiFi permission data
+      final wifiResult = await checkWifiPermissions();
+      final wifiAwareResult = await checkWifiAwarePermissions();
 
       if (mounted) {
         setState(() {
@@ -80,6 +87,8 @@ class _PermissionsHealthViewState extends State<PermissionsHealthView> {
           _bluetoothAdapterState = adapterState;
           _isBluetoothSupported = isSupported;
           _detailedBluetoothInfo = detailedInfo;
+          _wifiPermissionResult = wifiResult;
+          _wifiAwarePermissionResult = wifiAwareResult;
         });
       }
     } catch (e) {
@@ -142,6 +151,12 @@ class _PermissionsHealthViewState extends State<PermissionsHealthView> {
         _buildBluetoothPermissionCard(),
         const SizedBox(height: 16),
         _buildBluetoothStatusCard(),
+        const SizedBox(height: 16),
+        _buildWifiStatusCard(),
+        if (Platform.isAndroid) ...[
+          const SizedBox(height: 16),
+          _buildWifiAwareStatusCard(),
+        ],
       ],
     );
   }
@@ -215,6 +230,82 @@ class _PermissionsHealthViewState extends State<PermissionsHealthView> {
         );
       },
       */
+    );
+  }
+
+  Widget _buildWifiStatusCard() {
+    final wifiResult = _wifiPermissionResult;
+    
+    if (wifiResult == null) {
+      return _buildCard(
+        title: 'Wi-Fi Status',
+        statusText: 'Wi-Fi: Loading...',
+        isHealthy: false,
+        showActionButton: false,
+      );
+    }
+
+    final isConfigured = wifiResult.status == WifiPermissionStatus.enabled;
+    final isNotSupported = wifiResult.status == WifiPermissionStatus.notSupported;
+    
+    String statusText;
+    bool isHealthy;
+    
+    if (isNotSupported) {
+      statusText = 'Wi-Fi: Platform not supported';
+      isHealthy = false;
+    } else if (isConfigured) {
+      statusText = 'Wi-Fi: Enabled';
+      isHealthy = true;
+    } else {
+      statusText = 'Wi-Fi: Not configured';
+      isHealthy = false;
+    }
+
+    return _buildCard(
+      title: 'Wi-Fi Status',
+      statusText: statusText,
+      isHealthy: isHealthy,
+      showActionButton: false,
+      detailTexts: wifiResult.message.isNotEmpty ? [wifiResult.message] : null,
+    );
+  }
+
+  Widget _buildWifiAwareStatusCard() {
+    final wifiAwareResult = _wifiAwarePermissionResult;
+    
+    if (wifiAwareResult == null) {
+      return _buildCard(
+        title: 'Wi-Fi Aware Status',
+        statusText: 'Wi-Fi Aware: Loading...',
+        isHealthy: false,
+        showActionButton: false,
+      );
+    }
+
+    final isConfigured = wifiAwareResult.status == WifiPermissionStatus.enabled;
+    final isNotSupported = wifiAwareResult.status == WifiPermissionStatus.notSupported;
+    
+    String statusText;
+    bool isHealthy;
+    
+    if (isNotSupported) {
+      statusText = 'Wi-Fi Aware: Platform not supported';
+      isHealthy = false;
+    } else if (isConfigured) {
+      statusText = 'Wi-Fi Aware: Enabled';
+      isHealthy = true;
+    } else {
+      statusText = 'Wi-Fi Aware: Not configured';
+      isHealthy = false;
+    }
+
+    return _buildCard(
+      title: 'Wi-Fi Aware Status',
+      statusText: statusText,
+      isHealthy: isHealthy,
+      showActionButton: false,
+      detailTexts: wifiAwareResult.message.isNotEmpty ? [wifiAwareResult.message] : null,
     );
   }
 
