@@ -106,18 +106,6 @@ class _PermissionsHealthViewState extends State<PermissionsHealthView> {
     });
   }
 
-  Future<void> _requestBluetoothPermission() async {
-    try {
-      final status = await _permissionsService.requestBluetoothPermission();
-      if (status == PermissionStatus.permanentlyDenied) {
-        await openAppSettings();
-      }
-      await _loadInitialData();
-    } catch (e) {
-      debugPrint('Error requesting Bluetooth permission: $e');
-    }
-  }
-
   @override
   void dispose() {
     _bluetoothService.releaseSubscriber();
@@ -171,10 +159,6 @@ class _PermissionsHealthViewState extends State<PermissionsHealthView> {
       isHealthy: isGranted,
       showActionButton: false,
       actionButtonText: 'Grant Permission',
-      /*
-      currently disabled because it causes the app to crash in iOS
-      onActionPressed: _requestBluetoothPermission,
-       */
     );
   }
 
@@ -211,25 +195,9 @@ class _PermissionsHealthViewState extends State<PermissionsHealthView> {
       title: 'Bluetooth Status',
       statusText: 'Bluetooth: $statusText',
       isHealthy: isEnabled,
-      /*
-      showActionButton: !isEnabled && _bluetoothService.canEnableBluetooth,
-      */
       showActionButton: false,
       actionButtonText: 'Enable Bluetooth',
       detailTexts: detailTexts,
-
-      /*
-      onActionPressed: () {
-        // Open Bluetooth settings
-        // Note: flutter_blue_plus doesn't provide direct Bluetooth enabling
-        // Users need to enable it manually from system settings
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please enable Bluetooth in system settings'),
-          ),
-        );
-      },
-      */
     );
   }
 

@@ -84,9 +84,4 @@ class BluetoothPermissionsService {
     return status != PermissionStatus.permanentlyDenied &&
         status != PermissionStatus.restricted;
   }
-
-  /// Open app settings if permission is permanently denied
-  Future<void> openAppSettings() async {
-    await openAppSettings();
-  }
 }
