@@ -26,6 +26,7 @@ public class DittoFlutterToolsPlugin: NSObject, FlutterPlugin {
     // Check actual WiFi status using NWPathMonitor on background queue
     let monitor = NWPathMonitor(requiredInterfaceType: .wifi)
     let queue = DispatchQueue.global(qos: .background)
+    let resultSent: Bool = false
 
     monitor.pathUpdateHandler = { path in
       let isWifiAvailable = path.status == .satisfied && path.usesInterfaceType(.wifi)
@@ -41,6 +42,7 @@ public class DittoFlutterToolsPlugin: NSObject, FlutterPlugin {
           "isConfigured": isWifiAvailable,
           "message": message
         ])
+        resultSent = true
       }
       // Stop monitoring after first check
       monitor.cancel()
@@ -48,12 +50,15 @@ public class DittoFlutterToolsPlugin: NSObject, FlutterPlugin {
     monitor.start(queue: queue)
 
     // Add timeout to prevent hanging
-    DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
-      monitor.cancel()
-      result([
-        "isConfigured": false,
-        "message": "Timeout checking WiFi status"
-      ])
+    DispatchQueue.main.asyncAfter(deadline: .now() + 6.0) {
+      if !resultSent {
+        resultSent = true
+        monitor.cancel()
+        result([
+          "isConfigured": false,
+          "message": "Timeout checking WiFi status"
+        ])
+      }
     }
   }
 }

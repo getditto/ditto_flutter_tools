@@ -1,4 +1,4 @@
-Never get _$ => throw "stub";
+Never get _unsupportedPlatformStub => throw "stub";
 
 enum WifiPermissionStatus {
   enabled,
@@ -27,7 +27,8 @@ class WifiAwarePermissionResult {
 }
 
 /// Check if WiFi permissions are properly configured for Ditto
-Future<WifiPermissionResult> checkWifiPermissions() => _$;
+Future<WifiPermissionResult> checkWifiPermissions() => _unsupportedPlatformStub;
 
 /// Check if WiFi Aware permissions are properly configured for Ditto (Android only)
-Future<WifiAwarePermissionResult> checkWifiAwarePermissions() => _$;
+Future<WifiAwarePermissionResult> checkWifiAwarePermissions() =>
+    _unsupportedPlatformStub;
