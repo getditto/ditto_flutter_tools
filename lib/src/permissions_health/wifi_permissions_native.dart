@@ -1,31 +1,6 @@
 import 'dart:io';
 import 'package:flutter/services.dart';
-
-enum WifiPermissionStatus {
-  enabled,
-  notConfigured,
-  notSupported,
-}
-
-class WifiPermissionResult {
-  final WifiPermissionStatus status;
-  final String message;
-
-  const WifiPermissionResult({
-    required this.status,
-    required this.message,
-  });
-}
-
-class WifiAwarePermissionResult {
-  final WifiPermissionStatus status;
-  final String message;
-
-  const WifiAwarePermissionResult({
-    required this.status,
-    required this.message,
-  });
-}
+import 'wifi_permissions_types.dart';
 
 const MethodChannel _channel = MethodChannel('ditto_wifi_permissions');
 

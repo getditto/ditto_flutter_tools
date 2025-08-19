@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
 /// Service for managing Bluetooth status using flutter_blue_plus
@@ -131,7 +130,6 @@ class BluetoothStatusService {
       case BluetoothAdapterState.turningOff:
         return 'transitioning';
       case BluetoothAdapterState.unknown:
-      default:
         return 'unknown';
     }
   }
