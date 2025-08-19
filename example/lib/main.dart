@@ -81,6 +81,7 @@ class _DittoExampleState extends State<DittoExample> {
   DittoProvider? _dittoProvider;
   SubscriptionService? _subscriptionService;
   bool _isInitializing = true;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -101,11 +102,13 @@ class _DittoExampleState extends State<DittoExample> {
         _dittoProvider = dittoProvider;
         _subscriptionService = subscriptionService;
         _isInitializing = false;
+        _errorMessage = null;
       });
     } catch (e) {
       print('Error initializing Ditto: $e');
       setState(() {
         _isInitializing = false;
+        _errorMessage = e.toString();
       });
     }
   }
@@ -118,7 +121,7 @@ class _DittoExampleState extends State<DittoExample> {
 
     final dittoProvider = _dittoProvider;
     if (dittoProvider == null) {
-      return _error;
+      return _buildError(_errorMessage);
     }
 
     return _MainListView(dittoProvider: dittoProvider, subscriptionService: _subscriptionService!);
@@ -144,7 +147,8 @@ class _DittoExampleState extends State<DittoExample> {
       ),
     );
 
-  Widget get _error => MaterialApp(
+  Widget _buildError(String? errorMessage) {
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: DittoApp._lightTheme,
       darkTheme: DittoApp._darkTheme,
@@ -153,20 +157,41 @@ class _DittoExampleState extends State<DittoExample> {
         builder: (context) => Scaffold(
           appBar: AppBar(title: const Text("Ditto Tools")),
           body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.error, size: 64, color: Theme.of(context).colorScheme.error),
-                const SizedBox(height: 16),
-                const Text("Failed to initialize Ditto"),
-                const SizedBox(height: 8),
-                const Text("Please check your configuration and try again"),
-              ],
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.error,
+                    size: 64,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    "Failed to initialize Ditto",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    errorMessage ?? "Unknown error occurred",
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton.icon(
+                    onPressed: _initDitto,
+                    icon: const Icon(Icons.refresh),
+                    label: const Text("Retry"),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
       ),
     );
+  }
 }
 
 class _MainListView extends StatelessWidget {

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'dart:async';
 
@@ -28,15 +30,15 @@ class DittoProvider {
     String websocketUrl,
   ) async {
     // Note: macOS handles Bluetooth permissions differently via entitlements
-    if (!kIsWeb) {
-      await [
-        Permission.bluetoothConnect,
-        Permission.bluetoothAdvertise,
-        Permission.nearbyWifiDevices,
-        Permission.bluetoothScan
-      ].request();
-    }
-
+    if (!kIsWeb &&  (Platform.isIOS || Platform.isAndroid)) {
+      // Request permissions and check their status
+        await [
+          Permission.bluetoothConnect,
+          Permission.bluetoothAdvertise,
+          Permission.nearbyWifiDevices,
+          Permission.bluetoothScan
+        ].request();
+      }
     // Initialize Ditto first - this must be called before any other Ditto operations
     await Ditto.init();
 
