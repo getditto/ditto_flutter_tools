@@ -184,7 +184,7 @@ class _PermissionsHealthViewState extends State<PermissionsHealthView> {
 
     // Add detailed information if available
     if (detailedInfo != null) {
-      if (Platform.isAndroid){
+      if (Platform.isAndroid) {
         detailTexts.add('Warning: Android Emulators might display enabled when they have no physical Bluetooth adapter.');
       }
 
