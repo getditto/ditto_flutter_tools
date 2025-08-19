@@ -1,4 +1,4 @@
-Never get _unsupportedPlatformStub => throw "stub";
+Never get _unsupportedPlatformStub => throw "Unsupported platform for WiFi permissions checking";
 
 enum WifiPermissionStatus {
   enabled,
