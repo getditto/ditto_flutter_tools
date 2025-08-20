@@ -3,9 +3,30 @@ import UIKit
 import Network
 import Foundation
 
+/// Thread-safe result handler to ensure Flutter result is only sent once
+private class ResultHandler {
+  private let result: FlutterResult
+  private var hasResult = false
+  private let lock = NSLock()
+  
+  init(result: @escaping FlutterResult) {
+    self.result = result
+  }
+  
+  func sendResultOnce(_ resultData: [String: Any]) {
+    lock.lock()
+    defer { lock.unlock() }
+    
+    if !hasResult {
+      hasResult = true
+      DispatchQueue.main.async {
+        self.result(resultData)
+      }
+    }
+  }
+}
+
 public class DittoFlutterToolsPlugin: NSObject, FlutterPlugin {
-  private var pathMonitor: NWPathMonitor!
-  private var isWifiEnabled = false
 
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "ditto_wifi_permissions", binaryMessenger: registrar.messenger())
@@ -26,39 +47,31 @@ public class DittoFlutterToolsPlugin: NSObject, FlutterPlugin {
     // Check actual WiFi status using NWPathMonitor on background queue
     let monitor = NWPathMonitor(requiredInterfaceType: .wifi)
     let queue = DispatchQueue.global(qos: .background)
-    var resultSent: Bool = false
+    
+    // Use a dispatch_once-like mechanism to ensure result is only sent once
+    let resultHandler = ResultHandler(result: result)
 
     monitor.pathUpdateHandler = { path in
       let isWifiAvailable = path.status == .satisfied && path.usesInterfaceType(.wifi)
       
-      DispatchQueue.main.async {
-        var message = ""
-        if isWifiAvailable {
-          message = "WiFi is available"
-        } else {
-           message = "WiFi is not available"
-        }
-        result([
-          "isConfigured": isWifiAvailable,
-          "message": message
-        ])
-        resultSent = true
-      }
+      // Ensure we only send result once using thread-safe mechanism
+      resultHandler.sendResultOnce([
+        "isConfigured": isWifiAvailable,
+        "message": isWifiAvailable ? "WiFi is available" : "WiFi is not available"
+      ])
+      
       // Stop monitoring after first check
       monitor.cancel()
     }
     monitor.start(queue: queue)
 
     // Add timeout to prevent hanging
-    DispatchQueue.main.asyncAfter(deadline: .now() + 6.0) {
-      if !resultSent {
-        resultSent = true
-        monitor.cancel()
-        result([
-          "isConfigured": false,
-          "message": "Timeout checking WiFi status"
-        ])
-      }
+    DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+      resultHandler.sendResultOnce([
+        "isConfigured": false,
+        "message": "Timeout checking WiFi status"
+      ])
+      monitor.cancel()
     }
   }
 }
