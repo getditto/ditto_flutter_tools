@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:ditto_live/ditto_live.dart';
 import 'package:flutter/services.dart';
 import 'wifi_permissions_types.dart';
 
@@ -7,9 +7,9 @@ const MethodChannel _channel = MethodChannel('ditto_wifi_permissions');
 /// Check if WiFi permissions are properly configured for Ditto
 Future<WifiPermissionResult> checkWifiPermissions() async {
   try {
-    if (Platform.isIOS) {
+    if (Ditto.currentPlatform == SupportedPlatform.ios) {
       return await _checkiOSWifiPermissions();
-    } else if (Platform.isAndroid) {
+    } else if (Ditto.currentPlatform == SupportedPlatform.android) {
       return await _checkAndroidWifiPermissions();
     } else {
       return const WifiPermissionResult(
@@ -28,7 +28,7 @@ Future<WifiPermissionResult> checkWifiPermissions() async {
 /// Check if WiFi Aware permissions are properly configured for Ditto (Android only)
 Future<WifiAwarePermissionResult> checkWifiAwarePermissions() async {
   try {
-    if (Platform.isAndroid) {
+    if (Ditto.currentPlatform == SupportedPlatform.android) {
       return await _checkAndroidWifiAwarePermissions();
     } else {
       return const WifiAwarePermissionResult(

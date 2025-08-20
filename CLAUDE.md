@@ -6,7 +6,7 @@ Flutter package providing diagnostic and debugging tools for Ditto (peer-to-peer
 ## Tech Stack
 - **Framework**: Flutter (>=1.17.0)
 - **Language**: Dart (SDK >=3.4.0 <4.0.0)
-- **Core Dependency**: ditto_live ^4.9.1
+- **Core Dependency**: ditto_live ^4.12.0
 - **Package Type**: Flutter plugin/package
 
 ## Project Structure
@@ -90,7 +90,7 @@ The package includes web assets for the presence viewer:
 - These are bundled with the package via `pubspec.yaml` assets declaration
 
 ### Platform Support
-- iOS, Android, macOS, Linux, Windows, Web
+- iOS, Android, macOS, Linux, Web
 - Cross-platform code in `lib/src/cross_platform/` with platform-specific implementations
 
 ### Testing

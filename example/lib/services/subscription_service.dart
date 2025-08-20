@@ -1,17 +1,17 @@
-import 'package:example/providers/ditto_provider.dart';
+import 'package:example/services/ditto_service.dart';
 import 'package:ditto_live/ditto_live.dart';
 
 class SubscriptionService {
-
-  final  DittoProvider _dittoProvider;
-
+  final DittoService _dittoProvider;
   SubscriptionService(this._dittoProvider);
 
-  List<SyncSubscription> getSubscriptions()  {
-   if (_dittoProvider.ditto == null) return [];
-   var taskSubscription = _dittoProvider.ditto!.sync.registerSubscription("SELECT * FROM tasks");
-   var moviesSubscription = _dittoProvider.ditto!.sync.registerSubscription("SELECT * FROM movies");
-   var commentsSubscription = _dittoProvider.ditto!.sync.registerSubscription("SELECT * FROM comments");
-   return [taskSubscription, moviesSubscription, commentsSubscription];
-  }
+  late final _taskSub =
+      _dittoProvider.ditto!.sync.registerSubscription("SELECT * FROM tasks");
+  late final _moviesSub =
+      _dittoProvider.ditto!.sync.registerSubscription("SELECT * FROM movies");
+  late final _commentsSub =
+      _dittoProvider.ditto!.sync.registerSubscription("SELECT * FROM comments");
+
+  List<SyncSubscription> get subscriptions =>
+      _dittoProvider.ditto == null ? [] : [_taskSub, _moviesSub, _commentsSub];
 }

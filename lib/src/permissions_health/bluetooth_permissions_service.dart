@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:ditto_live/ditto_live.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 /// Service for managing Bluetooth permissions using permission_handler
@@ -10,7 +10,7 @@ class BluetoothPermissionsService {
 
   /// Get the appropriate Bluetooth permission for the current platform
   Permission get _bluetoothPermission {
-    if (Platform.isAndroid) {
+    if (Ditto.currentPlatform == SupportedPlatform.android)  {
       return Permission.bluetoothConnect;
     }
     return Permission.bluetooth;

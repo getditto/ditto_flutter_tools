@@ -5,7 +5,7 @@ import 'package:example/services/subscription_service.dart';
 import 'package:example/widgets/presence.dart';
 import 'package:flutter/material.dart';
 
-import 'providers/ditto_provider.dart';
+import 'services/ditto_service.dart';
 
 const appID = "REPLACE_ME_WITH_YOUR_APP_ID";
 const token = "REPLACE_ME_WITH_YOUR_ONLINE_PLAYGROUND_TOKEN";
@@ -78,7 +78,7 @@ class DittoExample extends StatefulWidget {
 }
 
 class _DittoExampleState extends State<DittoExample> {
-  DittoProvider? _dittoProvider;
+  DittoService? _dittoService;
   SubscriptionService? _subscriptionService;
   bool _isInitializing = true;
   String? _errorMessage;
@@ -92,14 +92,14 @@ class _DittoExampleState extends State<DittoExample> {
   Future<void> _initDitto() async {
     try {
       // Setup ditto provider
-      final dittoProvider = DittoProvider();
-      await dittoProvider.initialize(appID, token, authUrl, websocketUrl);
+      final dittoService = DittoService();
+      await dittoService.initialize(appID, token, authUrl, websocketUrl);
 
       // Only create subscription service after Ditto is fully initialized
-      final subscriptionService = SubscriptionService(dittoProvider);
+      final subscriptionService = SubscriptionService(dittoService);
 
       setState(() {
-        _dittoProvider = dittoProvider;
+        _dittoService = dittoService;
         _subscriptionService = subscriptionService;
         _isInitializing = false;
         _errorMessage = null;
@@ -119,13 +119,13 @@ class _DittoExampleState extends State<DittoExample> {
       return _loading;
     }
 
-    final dittoProvider = _dittoProvider;
-    if (dittoProvider == null) {
+    final dittoService = _dittoService;
+    if (dittoService == null) {
       return _buildError(_errorMessage);
     }
 
     return _MainListView(
-        dittoProvider: dittoProvider,
+        dittoService: dittoService,
         subscriptionService: _subscriptionService!);
   }
 
@@ -197,11 +197,11 @@ class _DittoExampleState extends State<DittoExample> {
 }
 
 class _MainListView extends StatelessWidget {
-  final DittoProvider dittoProvider;
+  final DittoService dittoService;
   final SubscriptionService subscriptionService;
 
   const _MainListView({
-    required this.dittoProvider,
+    required this.dittoService,
     required this.subscriptionService,
   });
 
@@ -266,7 +266,7 @@ class _MainListView extends StatelessWidget {
                             Material(
                           child: Scaffold(
                             appBar: AppBar(title: const Text("Peers List")),
-                            body: PresenceView(dittoProvider: dittoProvider),
+                            body: PresenceView(dittoService: dittoService),
                           ),
                         ),
                         transitionsBuilder:
@@ -313,9 +313,8 @@ class _MainListView extends StatelessWidget {
                           child: Scaffold(
                             appBar: AppBar(title: const Text("Sync Status")),
                             body: SyncStatusView(
-                              ditto: dittoProvider.ditto!,
-                              subscriptions:
-                                  subscriptionService.getSubscriptions(),
+                              ditto: dittoService.ditto!,
+                              subscriptions: subscriptionService.subscriptions,
                             ),
                           ),
                         ),
@@ -436,7 +435,7 @@ class _MainListView extends StatelessWidget {
                             Material(
                           child: Scaffold(
                             appBar: AppBar(title: const Text("Disk Usage")),
-                            body: DiskUsageView(ditto: dittoProvider.ditto!),
+                            body: DiskUsageView(ditto: dittoService.ditto!),
                           ),
                         ),
                         transitionsBuilder:

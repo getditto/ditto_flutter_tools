@@ -1,5 +1,4 @@
-import 'dart:io';
-
+import 'package:ditto_live/ditto_live.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -144,7 +143,7 @@ class _PermissionsHealthViewState extends State<PermissionsHealthView> {
         _buildBluetoothStatusCard(),
         const SizedBox(height: 16),
         _buildWifiStatusCard(),
-        if (Platform.isAndroid) ...[
+        if (Ditto.currentPlatform == SupportedPlatform.android) ...[
           const SizedBox(height: 16),
           _buildWifiAwareStatusCard(),
         ],
@@ -171,7 +170,7 @@ class _PermissionsHealthViewState extends State<PermissionsHealthView> {
 
     // Add detailed information if available
     if (detailedInfo != null) {
-      if (Platform.isAndroid) {
+      if (Ditto.currentPlatform == SupportedPlatform.android) {
         detailTexts.add('Warning: Android Emulators might display enabled when they have no physical Bluetooth adapter.');
       }
 

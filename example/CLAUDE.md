@@ -7,7 +7,7 @@ Example Flutter application demonstrating the usage of the ditto_flutter_tools p
 - **Framework**: Flutter
 - **Language**: Dart (SDK >=3.4.0 <4.0.0)
 - **Core Dependencies**:
-  - `ditto_live`: 4.9.1 (Peer-to-peer database SDK)
+  - `ditto_live`: 4.12.0 (Peer-to-peer database SDK)
   - `ditto_flutter_tools`: Local package (parent directory)
   - `permission_handler`: ^11.3.1 (Platform permissions)
   - `path_provider`: ^2.1.5 (File system paths)
@@ -28,7 +28,6 @@ Example Flutter application demonstrating the usage of the ditto_flutter_tools p
 - `ios/` - iOS platform configuration
 - `macos/` - macOS platform configuration
 - `linux/` - Linux platform configuration
-- `windows/` - Windows platform configuration
 - `web/` - Web platform configuration
 
 ## Application Setup

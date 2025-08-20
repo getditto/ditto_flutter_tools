@@ -1,17 +1,22 @@
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'dart:async';
 
 import 'package:ditto_live/ditto_live.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:path_provider/path_provider.dart';
 
-class DittoProvider {
+class DittoService {
   Ditto? _ditto;
+  bool get isInitialized => _ditto != null;
 
   /// The Ditto instance used for database operations
-  Ditto? get ditto => _ditto;
+  /// Throws StateError if Ditto hasn't been initialized yet
+  Ditto get ditto {
+    if (_ditto == null) {
+      throw StateError(
+          'Ditto has not been initialized. Call initialize() first.');
+    }
+    return _ditto!;
+  }
 
   /// Initializes the Ditto instance with necessary permissions and configuration.
   /// https://docs.ditto.live/sdk/latest/install-guides/flutter#step-3-import-and-initialize-the-ditto-sdk
@@ -30,15 +35,17 @@ class DittoProvider {
     String websocketUrl,
   ) async {
     // Note: macOS handles Bluetooth permissions differently via entitlements
-    if (!kIsWeb &&  (Platform.isIOS || Platform.isAndroid)) {
+    if (!kIsWeb &&
+        (Ditto.currentPlatform == SupportedPlatform.android ||
+            Ditto.currentPlatform == SupportedPlatform.ios)) {
       // Request permissions and check their status
-        await [
-          Permission.bluetoothConnect,
-          Permission.bluetoothAdvertise,
-          Permission.nearbyWifiDevices,
-          Permission.bluetoothScan
-        ].request();
-      }
+      await [
+        Permission.bluetoothConnect,
+        Permission.bluetoothAdvertise,
+        Permission.nearbyWifiDevices,
+        Permission.bluetoothScan
+      ].request();
+    }
     // Initialize Ditto first - this must be called before any other Ditto operations
     await Ditto.init();
 
@@ -49,32 +56,32 @@ class DittoProvider {
       print("[$level] => $message");
     };
 
-    final persistenceDirectory = await getApplicationDocumentsDirectory();
-
     final identity = OnlinePlaygroundIdentity(
         appID: appId,
         token: token,
         customAuthUrl: authUrl,
         enableDittoCloudSync: false);
 
-    _ditto = await Ditto.open(
-      identity: identity,
-      persistenceDirectory: "${persistenceDirectory.path}/ditto",
-    );
+    _ditto = await Ditto.open(identity: identity);
 
-    _ditto?.updateTransportConfig((config) {
+    if (!isInitialized) {
+      throw Exception("Failed to initialize Ditto");
+    }
+
+    // Now we can use the getter which guarantees non-null
+    ditto.updateTransportConfig((config) {
       // Note: this will not enable peer-to-peer sync on the web platform
       config.setAllPeerToPeerEnabled(true);
       config.connect.webSocketUrls.add(websocketUrl);
     });
 
     //setup device information for peer listing
-    _ditto?.deviceName = "Flutter (${ditto?.deviceName})";
+    ditto.deviceName = "Flutter (${ditto.deviceName})";
 
     //not sure why this is set - need to research
-    _ditto?.smallPeerInfo.isEnabled = true;
-    _ditto?.smallPeerInfo.syncScope = SmallPeerInfoSyncScope.bigPeerOnly;
+    ditto.smallPeerInfo.isEnabled = true;
+    ditto.smallPeerInfo.syncScope = SmallPeerInfoSyncScope.bigPeerOnly;
 
-    _ditto?.startSync();
+    ditto.startSync();
   }
 }

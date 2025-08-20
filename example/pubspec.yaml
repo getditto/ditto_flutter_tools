@@ -31,7 +31,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  ditto_live: 4.9.2
+  ditto_live: 4.12.0
   ditto_flutter_tools:
     path: ../
 
