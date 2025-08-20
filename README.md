@@ -40,7 +40,6 @@ The implementation uses platform-specific detection to provide accurate status i
 - ✅ **iOS**: Monitors Bluetooth permissions and detects simulator environments
 - ✅ **Android**: Monitors Bluetooth permissions and detects emulator environments  
 - ✅ **macOS**: Monitors Bluetooth permissions and detects simulator environments
-- ✅ **Linux/Windows**: Basic permission checking with fallback to settings
 - ❌ **Web**: Not supported - displays a message indicating web platform limitations
 
 ### Current Implementation Status
