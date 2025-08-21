@@ -1,39 +1,73 @@
 // ignore_for_file: invalid_use_of_visible_for_testing_member
 
 import 'package:ditto_flutter_tools/ditto_flutter_tools.dart';
-import 'package:ditto_live/ditto_live.dart';
-import 'package:example/presence.dart';
+import 'package:example/services/subscription_service.dart';
+import 'package:example/widgets/presence.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 
-import 'dialog.dart';
-import 'dql_builder.dart';
-import 'task.dart';
-import 'task_view.dart';
+import 'services/ditto_service.dart';
 
 const appID = "REPLACE_ME_WITH_YOUR_APP_ID";
-const token = "REPLACE_ME_WITH_YOUR_PLAYGROUND_TOKEN";
+const token = "REPLACE_ME_WITH_YOUR_ONLINE_PLAYGROUND_TOKEN";
+const authUrl = "REPLACE_ME_WITH_YOUR_AUTH_URL";
+const websocketUrl = "REPLACE_ME_WITH_WEBSOCKET_URL";
 
 const authAppID = "REPLACE_ME_WITH_YOUR_APP_ID";
-
-const collection = "tasks13";
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Ditto.init();
+  runApp(const DittoApp());
+}
 
-  DittoLogger.isEnabled = false;
-  DittoLogger.minimumLogLevel = LogLevel.error;
-  DittoLogger.customLogCallback = (level, message) {
-    print("[$level] => $message");
-  };
+class DittoApp extends StatelessWidget {
+  const DittoApp({super.key});
 
-  runApp(const MaterialApp(
-    debugShowCheckedModeBanner: false,
-    home: DittoExample(),
-  ));
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Ditto Tools',
+      theme: _lightTheme,
+      darkTheme: _darkTheme,
+      themeMode: ThemeMode.system,
+      home: const DittoExample(),
+    );
+  }
+
+  static final ThemeData _lightTheme = ThemeData(
+    brightness: Brightness.light,
+    useMaterial3: true,
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: Colors.blue,
+      brightness: Brightness.light,
+    ).copyWith(
+      primary: Colors.blue,
+      secondary: Colors.green,
+      tertiary: Colors.blueGrey,
+      error: Colors.red,
+      surface: Colors.white,
+      surfaceContainerHighest: Colors.grey[50],
+      outline: Colors.grey[300],
+    ),
+  );
+
+  static final ThemeData _darkTheme = ThemeData(
+    brightness: Brightness.dark,
+    useMaterial3: true,
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: Colors.blue,
+      brightness: Brightness.dark,
+    ).copyWith(
+      primary: Colors.blue[300],
+      secondary: Colors.green[300],
+      tertiary: Colors.blueGrey[400],
+      error: Colors.red[300],
+      surface: Colors.grey[900],
+      surfaceContainerHighest: Colors.grey[850],
+      outline: Colors.grey[600],
+    ),
+  );
 }
 
 class DittoExample extends StatefulWidget {
@@ -44,216 +78,385 @@ class DittoExample extends StatefulWidget {
 }
 
 class _DittoExampleState extends State<DittoExample> {
-  Ditto? _ditto;
-  var _syncing = true;
-  int _pageIndex = 0;
-
-  late final SyncSubscription _subscription;
+  DittoService? _dittoService;
+  SubscriptionService? _subscriptionService;
+  bool _isInitializing = true;
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
-
     _initDitto();
   }
 
   Future<void> _initDitto() async {
-    await [
-      Permission.bluetoothConnect,
-      Permission.bluetoothAdvertise,
-      Permission.nearbyWifiDevices,
-      Permission.bluetoothScan
-    ].request();
+    try {
+      // Setup ditto provider
+      final dittoService = DittoService();
+      await dittoService.initialize(appID, token, authUrl, websocketUrl);
 
-    final identity = OnlinePlaygroundIdentity(
-      appID: appID,
-      token: token,
-    );
+      // Only create subscription service after Ditto is fully initialized
+      final subscriptionService = SubscriptionService(dittoService);
 
-    // final identity = await OnlineWithAuthenticationIdentity.create(
-    //   appID: authAppID,
-    //   authenticationHandler: AuthenticationHandler(
-    //     authenticationExpiringSoon: (authenticator, secondsRemaining) async {
-    //       await authenticator.login(token: token, provider: "auth-webhook");
-    //     },
-    //     authenticationRequired: (authenticator) async {
-    //       await authenticator.login(token: token, provider: "auth-webhook");
-    //     },
-    //   ),
-    // );
-
-    final persistenceDirectory = await getApplicationDocumentsDirectory();
-
-    final ditto = await Ditto.open(
-      identity: identity,
-      persistenceDirectory: "${persistenceDirectory.path}/ditto",
-    );
-
-    ditto.updateTransportConfig((config) {
-      config.setAllPeerToPeerEnabled(true);
-      config.connect.webSocketUrls.add(
-        "wss://$authAppID.cloud.ditto.live",
-      );
-    });
-    ditto.deviceName = "Flutter (${ditto.deviceName})";
-
-    ditto.smallPeerInfo.isEnabled = true;
-    ditto.smallPeerInfo.syncScope = SmallPeerInfoSyncScope.bigPeerOnly;
-
-    ditto.startSync();
-
-    _subscription = ditto.sync.registerSubscription(
-      "SELECT * FROM $collection WHERE deleted = false",
-    );
-
-    setState(() => _ditto = ditto);
-  }
-
-  Future<void> _addTask() async {
-    final pair = await showAddTaskDialog(context, _ditto!);
-    if (pair == null) return;
-    final (task, attachment) = pair;
-
-    await _ditto!.store.execute(
-      "INSERT INTO COLLECTION $collection (${Task.schema}) DOCUMENTS (:task)",
-      arguments: {
-        "task": {
-          ...task.toJson(),
-          "image": attachment,
-          // "image": { "_id": asasd, "_ditto_internal_...": 2},
-        },
-      },
-    );
+      setState(() {
+        _dittoService = dittoService;
+        _subscriptionService = subscriptionService;
+        _isInitializing = false;
+        _errorMessage = null;
+      });
+    } catch (e) {
+      print('Error initializing Ditto: $e');
+      setState(() {
+        _isInitializing = false;
+        _errorMessage = e.toString();
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final ditto = _ditto;
+    if (_isInitializing) {
+      return _loading;
+    }
 
-    if (ditto == null) return _loading;
+    final dittoService = _dittoService;
+    if (dittoService == null) {
+      return _buildError(_errorMessage);
+    }
 
-    return Scaffold(
-      appBar: AppBar(title: const Text("Ditto Tasks")),
-      floatingActionButton: _pageIndex == 0 ? _fab : null,
-      body: IndexedStack(
-        index: _pageIndex,
-        children: [
-          Column(
-            children: [
-              _syncTile,
-              // const LogLevelSwitch(),
-              const Divider(height: 1),
-              Expanded(child: _tasksList),
-            ],
+    return _MainListView(
+        dittoService: dittoService,
+        subscriptionService: _subscriptionService!);
+  }
+
+  Widget get _loading => MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: DittoApp._lightTheme,
+        darkTheme: DittoApp._darkTheme,
+        themeMode: ThemeMode.system,
+        home: Scaffold(
+          appBar: AppBar(title: const Text("Ditto Tools")),
+          body: const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text("Initializing Ditto..."),
+              ],
+            ),
           ),
-          PresenceView(ditto: _ditto!),
-          SyncStatusView(
-            ditto: _ditto!,
-            subscriptions: [_subscription],
+        ),
+      );
+
+  Widget _buildError(String? errorMessage) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: DittoApp._lightTheme,
+      darkTheme: DittoApp._darkTheme,
+      themeMode: ThemeMode.system,
+      home: Builder(
+        builder: (context) => Scaffold(
+          appBar: AppBar(title: const Text("Ditto Tools")),
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.error,
+                    size: 64,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    "Failed to initialize Ditto",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    errorMessage ?? "Unknown error occurred",
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton.icon(
+                    onPressed: _initDitto,
+                    icon: const Icon(Icons.refresh),
+                    label: const Text("Retry"),
+                  ),
+                ],
+              ),
+            ),
           ),
-        ],
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.task), label: "Tasks"),
-          BottomNavigationBarItem(icon: Icon(Icons.devices), label: "Presence"),
-          BottomNavigationBarItem(icon: Icon(Icons.sync), label: "Sync Status"),
-        ],
-        currentIndex: _pageIndex,
-        onTap: (value) => setState(() => _pageIndex = value),
+        ),
       ),
     );
   }
+}
 
-  Widget get _loading => Scaffold(
-        appBar: AppBar(title: const Text("Ditto Tasks")),
-        body: const Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
+class _MainListView extends StatelessWidget {
+  final DittoService dittoService;
+  final SubscriptionService subscriptionService;
 
-  Widget get _fab => FloatingActionButton(
-        onPressed: _addTask,
-        child: const Icon(Icons.add_task),
-      );
+  const _MainListView({
+    required this.dittoService,
+    required this.subscriptionService,
+  });
 
-  Widget get _syncTile => SwitchListTile(
-        title: const Text("Syncing"),
-        value: _syncing,
-        onChanged: (value) async {
-          if (value) {
-            _ditto!.startSync();
-          } else {
-            _ditto!.stopSync();
-          }
-
-          setState(() => _syncing = value);
-        },
-      );
-
-  Widget get _tasksList => DqlBuilder(
-        ditto: _ditto!,
-        query:
-            "SELECT * FROM COLLECTION $collection (${Task.schema}) WHERE deleted = false",
-        builder: (context, response) {
-          Widget makeTaskView(QueryResultItem result) {
-            final task = Task.fromJson(result.value);
-            final imageToken = result.value["image"];
-
-            return _singleTask(task, imageToken);
-          }
-
-          final tasks = response.items.map(makeTaskView);
-
-          return ListView(children: [...tasks]);
-        },
-      );
-
-  Widget _singleTask(Task task, Map<String, dynamic>? image) => Dismissible(
-        key: Key("${task.id}-${task.title}"),
-        onDismissed: (direction) async {
-          await _ditto!.store.execute(
-            "UPDATE $collection SET deleted = true WHERE _id = '${task.id}'",
-          );
-
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("Deleted Task ${task.title}")),
-            );
-          }
-        },
-        background: _dismissibleBackground(true),
-        secondaryBackground: _dismissibleBackground(false),
-        child: TaskView(ditto: _ditto!, task: task, token: image),
-      );
-
-  Widget _dismissibleBackground(bool primary) => Container(
-        color: Colors.red,
-        child: Align(
-          alignment: primary ? Alignment.centerLeft : Alignment.centerRight,
-          child: const Padding(
-            padding: EdgeInsets.all(8.0),
-            child: Icon(Icons.delete),
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Ditto Tools"),
+      ),
+      body: ListView(
+        children: [
+          const SizedBox(height: 20),
+          // NETWORK Section
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Text(
+              "NETWORK",
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context)
+                    .textTheme
+                    .labelLarge
+                    ?.color
+                    ?.withOpacity(0.6),
+                letterSpacing: 0.5,
+              ),
+            ),
           ),
-        ),
-      );
-
-  // Widget get _menuButton => MenuAnchor(
-  //       builder: (context, controller, child) => IconButton(
-  //         icon: const Icon(Icons.menu),
-  //         onPressed: () {
-  //           if (controller.isOpen) {
-  //             controller.close();
-  //           } else {
-  //             controller.open();
-  //           }
-  //         },
-  //       ),
-  //       menuChildren: [
-  //         MenuItemButton(
-  //           child: const Text("Show Disk Usage"),
-  //           onPressed: () => DiskUsage.show(context, ditto),
-  //         ),
-  //       ],
-  //     );
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                  color:
+                      Theme.of(context).colorScheme.outline.withOpacity(0.3)),
+            ),
+            child: Column(
+              children: [
+                ListTile(
+                  leading: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      Icons.devices,
+                      color: Theme.of(context).colorScheme.onPrimary,
+                      size: 20,
+                    ),
+                  ),
+                  title: const Text("Peers List"),
+                  trailing: Icon(Icons.chevron_right,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            Material(
+                          child: Scaffold(
+                            appBar: AppBar(title: const Text("Peers List")),
+                            body: PresenceView(dittoService: dittoService),
+                          ),
+                        ),
+                        transitionsBuilder:
+                            (context, animation, secondaryAnimation, child) {
+                          return SlideTransition(
+                            position: Tween<Offset>(
+                              begin: const Offset(1.0, 0.0),
+                              end: Offset.zero,
+                            ).animate(animation),
+                            child: child,
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
+                Divider(
+                    height: 1,
+                    color:
+                        Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                    indent: 56),
+                ListTile(
+                  leading: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.secondary,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      Icons.sync,
+                      color: Theme.of(context).colorScheme.onSecondary,
+                      size: 20,
+                    ),
+                  ),
+                  title: const Text("Sync Status"),
+                  trailing: Icon(Icons.chevron_right,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            Material(
+                          child: Scaffold(
+                            appBar: AppBar(title: const Text("Sync Status")),
+                            body: SyncStatusView(
+                              ditto: dittoService.ditto!,
+                              subscriptions: subscriptionService.subscriptions,
+                            ),
+                          ),
+                        ),
+                        transitionsBuilder:
+                            (context, animation, secondaryAnimation, child) {
+                          return SlideTransition(
+                            position: Tween<Offset>(
+                              begin: const Offset(1.0, 0.0),
+                              end: Offset.zero,
+                            ).animate(animation),
+                            child: child,
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          // SYSTEM Section
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Text(
+              "SYSTEM",
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context)
+                    .textTheme
+                    .labelLarge
+                    ?.color
+                    ?.withOpacity(0.6),
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                  color:
+                      Theme.of(context).colorScheme.outline.withOpacity(0.3)),
+            ),
+            child: Column(
+              children: [
+                ListTile(
+                  leading: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: Colors.purple,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.health_and_safety,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                  title: const Text("Permissions Health"),
+                  trailing: Icon(Icons.chevron_right,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            Material(
+                          child: Scaffold(
+                            appBar:
+                                AppBar(title: const Text("Permissions Health")),
+                            body: const PermissionsHealthView(),
+                          ),
+                        ),
+                        transitionsBuilder:
+                            (context, animation, secondaryAnimation, child) {
+                          return SlideTransition(
+                            position: Tween<Offset>(
+                              begin: const Offset(1.0, 0.0),
+                              end: Offset.zero,
+                            ).animate(animation),
+                            child: child,
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
+                Divider(
+                    height: 1,
+                    color:
+                        Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                    indent: 56),
+                ListTile(
+                  leading: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.tertiary,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      Icons.storage,
+                      color: Theme.of(context).colorScheme.onTertiary,
+                      size: 20,
+                    ),
+                  ),
+                  title: const Text("Disk Usage"),
+                  trailing: Icon(Icons.chevron_right,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            Material(
+                          child: Scaffold(
+                            appBar: AppBar(title: const Text("Disk Usage")),
+                            body: DiskUsageView(ditto: dittoService.ditto!),
+                          ),
+                        ),
+                        transitionsBuilder:
+                            (context, animation, secondaryAnimation, child) {
+                          return SlideTransition(
+                            position: Tween<Offset>(
+                              begin: const Offset(1.0, 0.0),
+                              end: Offset.zero,
+                            ).animate(animation),
+                            child: child,
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

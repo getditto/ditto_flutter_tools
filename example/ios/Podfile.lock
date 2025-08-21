@@ -1,8 +1,10 @@
 PODS:
-  - ditto_live (4.9.0-rc.1):
-    - DittoFlutterIOS (= 4.9.0-rc.1)
+  - ditto_flutter_tools (1.0.0):
     - Flutter
-  - DittoFlutterIOS (4.9.0-rc.1)
+  - ditto_live (4.12.0):
+    - DittoFlutter (= 4.12.0)
+    - Flutter
+  - DittoFlutter (4.12.0)
   - DKImagePickerController/Core (4.3.9):
     - DKImagePickerController/ImageDataManager
     - DKImagePickerController/Resource
@@ -38,6 +40,11 @@ PODS:
     - DKImagePickerController/PhotoGallery
     - Flutter
   - Flutter (1.0.0)
+  - flutter_blue_plus_darwin (0.0.2):
+    - Flutter
+    - FlutterMacOS
+  - integration_test (0.0.1):
+    - Flutter
   - path_provider_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -51,28 +58,37 @@ PODS:
     - Flutter
 
 DEPENDENCIES:
+  - ditto_flutter_tools (from `.symlinks/plugins/ditto_flutter_tools/ios`)
   - ditto_live (from `.symlinks/plugins/ditto_live/ios`)
   - file_picker (from `.symlinks/plugins/file_picker/ios`)
   - Flutter (from `Flutter`)
+  - flutter_blue_plus_darwin (from `.symlinks/plugins/flutter_blue_plus_darwin/darwin`)
+  - integration_test (from `.symlinks/plugins/integration_test/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
   - webview_flutter_wkwebview (from `.symlinks/plugins/webview_flutter_wkwebview/ios`)
 
 SPEC REPOS:
   trunk:
-    - DittoFlutterIOS
+    - DittoFlutter
     - DKImagePickerController
     - DKPhotoGallery
     - SDWebImage
     - SwiftyGif
 
 EXTERNAL SOURCES:
+  ditto_flutter_tools:
+    :path: ".symlinks/plugins/ditto_flutter_tools/ios"
   ditto_live:
     :path: ".symlinks/plugins/ditto_live/ios"
   file_picker:
     :path: ".symlinks/plugins/file_picker/ios"
   Flutter:
     :path: Flutter
+  flutter_blue_plus_darwin:
+    :path: ".symlinks/plugins/flutter_blue_plus_darwin/darwin"
+  integration_test:
+    :path: ".symlinks/plugins/integration_test/ios"
   path_provider_foundation:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
   permission_handler_apple:
@@ -81,18 +97,21 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/webview_flutter_wkwebview/ios"
 
 SPEC CHECKSUMS:
-  ditto_live: 1e49c14f5130ce36a58c9ead05177c2cb3ca884a
-  DittoFlutterIOS: e4d2cc551e9c47d6a3a9fdefaa231bbbb6564d01
+  ditto_flutter_tools: a02becf2c704015fa6a02d2aca2a78020c78f746
+  ditto_live: 9950da173cd15a29f2cfd2ee8ef617ad0ba8cbc2
+  DittoFlutter: 5d40ce5f5059818ffdef0ed57502c0f65135413a
   DKImagePickerController: 946cec48c7873164274ecc4624d19e3da4c1ef3c
   DKPhotoGallery: b3834fecb755ee09a593d7c9e389d8b5d6deed60
   file_picker: 9b3292d7c8bc68c8a7bf8eb78f730e49c8efc517
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  flutter_blue_plus_darwin: 20a08bfeaa0f7804d524858d3d8744bcc1b6dbc3
+  integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e
   path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
   permission_handler_apple: 4ed2196e43d0651e8ff7ca3483a069d469701f2d
   SDWebImage: f84b0feeb08d2d11e6a9b843cb06d75ebf5b8868
   SwiftyGif: 706c60cf65fa2bc5ee0313beece843c8eb8194d4
   webview_flutter_wkwebview: 45a041c7831641076618876de3ba75c712860c6b
 
-PODFILE CHECKSUM: 1959d098c91d8a792531a723c4a9d7e9f6a01e38
+PODFILE CHECKSUM: 523a553419650b8b7f0e5eaaf0d48385d65c9c32
 
 COCOAPODS: 1.16.2

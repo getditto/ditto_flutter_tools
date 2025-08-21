@@ -1,9 +1,10 @@
 import 'package:ditto_live/ditto_live.dart';
 import 'package:flutter/material.dart';
+import '../services/ditto_service.dart';
 
 class PresenceView extends StatefulWidget {
-  final Ditto ditto;
-  const PresenceView({super.key, required this.ditto});
+  final DittoService dittoService;
+  const PresenceView({super.key, required this.dittoService});
 
   @override
   State<PresenceView> createState() => _PresenceViewState();
@@ -17,7 +18,7 @@ class _PresenceViewState extends State<PresenceView> {
   void initState() {
     super.initState();
 
-    _observer = widget.ditto.presence
+    _observer = widget.dittoService.ditto!.presence
         .observe((graph) => setState(() => _graph = graph));
   }
 
