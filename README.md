@@ -49,24 +49,6 @@ The implementation uses platform-specific detection to provide accurate status i
 - Simulator/emulator detection (iOS/Android)
 - Settings navigation (platform-specific)
 - Web platform detection and messaging
-
-**⚠️ Partial Implementation:**
-- Bluetooth service status (shows "Unknown" - requires native method channels for full accuracy)
-- WiFi service status (shows "Unknown" - requires native method channels for full accuracy)
-
-**🚀 Future Enhancement:**
-To achieve full parity with iOS and Android native implementations, method channels would need to be added to:
-- Check actual Bluetooth adapter state (enabled/disabled/unsupported)
-- Check WiFi Direct/AWDL availability and state
-- Provide real-time status updates
-
-### Interactive Actions
-
-When permissions are not granted or services are disabled, the view provides action buttons:
-- **Grant Permission** - Opens permission request dialog or app settings
-- **Enable Bluetooth** - Opens system Bluetooth settings
-- **Enable Wi-Fi** - Opens system WiFi settings
-
 ### Dependencies
 
 The `PermissionsHealthView` uses the `permission_handler` package to check and request permissions. Make sure your app includes the necessary platform-specific configurations based on the Ditto documentation at:[https://docs.ditto.live/sdk/latest/install-guides/flutter#step-1%3A-add-the-ditto-dependency](https://docs.ditto.live/sdk/latest/install-guides/flutter#step-1%3A-add-the-ditto-dependency)
@@ -182,6 +164,91 @@ In the second scenario, you can be quite confident that your data is still the m
 
 That said, the aim of this tool is to provide heuristics that you can combine with an understanding of your data model to get an accurate picture of the state of your device.
 If you have specific knowledge about your data model or update frequency, you can use that knowledge to get a clearer view of the data you have locally.
+
+## `DiskUsageView`
+
+The `DiskUsageView` provides a comprehensive interface for monitoring Ditto database disk usage and exporting data for debugging or backup purposes. This tool helps developers understand storage consumption and provides convenient export functionality for both database files and logs.
+
+### Usage
+
+The `DiskUsageView` can be used as a standalone widget in your Flutter application:
+
+```dart
+import 'package:ditto_flutter_tools/ditto_flutter_tools.dart';
+
+// In your widget build method
+Scaffold(
+  appBar: AppBar(title: Text('Disk Usage')),
+  body: DiskUsageView(ditto: myDittoInstance),
+)
+```
+
+### Features
+
+The disk usage view provides:
+
+1. **Storage Metrics** - Displays the size of each file and directory within the Ditto persistence directory
+2. **Export Database** - Exports the entire Ditto database directory to a user-selected location
+3. **Export Logs** - Exports Ditto debug logs to a file for troubleshooting
+
+### Export Functionality
+
+#### Export Database
+- Creates a timestamped directory (e.g., `ditto-export-1234567890`) containing a copy of the database
+- Automatically skips lock files and system files that might be in use
+- Files excluded: `__ditto_lock*`, `lock.mdb`, and hidden files (starting with `.`)
+
+#### Export Logs
+- Exports Ditto logs to a `ditto_log.txt` file
+- Useful for debugging sync issues or sharing logs with support
+
+### Platform-Specific Behavior
+
+- **iOS**: 
+  - Exports to the app's Documents directory due to iOS sandbox restrictions
+  - Files are accessible via the Files app under "On My iPhone/iPad > [Your App Name]"
+  - No directory picker is shown; files are automatically saved to Documents
+
+- **Android/macOS/Linux**: 
+  - Shows a directory picker allowing users to choose the export location
+  - Requires write permissions to the selected directory
+
+- **Web**: 
+  - Export functionality is not supported on web platforms
+
+### Required Permissions
+
+> [!WARNING]
+> Proper permissions must be configured for the export feature to work correctly:
+
+#### iOS Configuration
+Add these keys to your `ios/Runner/Info.plist`:
+```xml
+<key>LSSupportsOpeningDocumentsInPlace</key>
+<true/>
+<key>UISupportsDocumentBrowser</key>
+<true/>
+<key>UIFileSharingEnabled</key>
+<true/>
+```
+
+#### Android Configuration
+The app needs storage permissions, which are typically handled by the file_picker package. No additional configuration is usually required, but ensure your app targets the appropriate Android SDK version.
+
+### Important Notes
+
+> [!IMPORTANT]
+> - Users must have write permissions to the selected export location
+> - On iOS, exports always go to the app's Documents directory (no location picker)
+> - Lock files and system files are automatically skipped to prevent export errors
+> - Each export creates a new timestamped directory to avoid overwriting previous exports
+
+### Dependencies
+
+The `DiskUsageView` requires:
+- `file_picker` package for directory selection (Android/macOS/Linux)
+- `path_provider` package for accessing app directories (iOS)
+- Proper platform permissions as described above
 
 ## Testing
 

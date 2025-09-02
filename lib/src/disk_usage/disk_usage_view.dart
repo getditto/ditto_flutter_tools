@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:ditto_flutter_tools/src/util.dart';
 import 'package:ditto_live/ditto_live.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 import '../cross_platform/cross_platform.dart';
 
@@ -48,12 +51,30 @@ class _DiskUsageViewState extends State<DiskUsageView> {
         label: const Text("Export Logs"),
         icon: const Icon(Icons.bug_report),
         onPressed: () async {
-          // i would use "saveFile" but for some reason it crashes
-          final dir = await FilePicker.platform.getDirectoryPath();
-          if (dir == null) return;
-          final path = p.join(dir, "ditto_log.txt");
-          await DittoLogger.exportLogs(path);
-          _showSnackbar("Logs exported to $path");
+          try {
+            String exportPath;
+            
+            if (Platform.isIOS) {
+              // On iOS, export to the app's Documents directory
+              final documentsDir = await getApplicationDocumentsDirectory();
+              exportPath = p.join(documentsDir.path, "ditto_log.txt");
+            } else {
+              // On Android, macOS, and other platforms, let user choose directory
+              final dir = await FilePicker.platform.getDirectoryPath();
+              if (dir == null) return;
+              exportPath = p.join(dir, "ditto_log.txt");
+            }
+            
+            await DittoLogger.exportLogs(exportPath);
+            
+            if (Platform.isIOS) {
+              _showSnackbar("Logs exported to Files app\n(Check in Files > On My iPhone > Example)");
+            } else {
+              _showSnackbar("Logs exported to $exportPath");
+            }
+          } catch (e) {
+            _showSnackbar("Export failed: ${e.toString()}");
+          }
         },
       );
 
@@ -61,10 +82,30 @@ class _DiskUsageViewState extends State<DiskUsageView> {
         label: const Text("Export Data Directory"),
         icon: const Icon(Icons.folder),
         onPressed: () async {
-          final path = await FilePicker.platform.getDirectoryPath();
-          if (path == null) return;
-          copyDir(widget.ditto.persistenceDirectory, path);
-          _showSnackbar("Data exported to $path");
+          try {
+            String? exportPath;
+            
+            if (Platform.isIOS) {
+              // On iOS, export to the app's Documents directory which is accessible via Files app
+              final documentsDir = await getApplicationDocumentsDirectory();
+              exportPath = documentsDir.path;
+            } else {
+              // On Android, macOS, and other platforms, let user choose directory
+              exportPath = await FilePicker.platform.getDirectoryPath();
+              if (exportPath == null) return;
+            }
+            
+            final actualExportPath = copyDir(widget.ditto.persistenceDirectory, exportPath);
+            
+            if (Platform.isIOS) {
+              final exportDirName = p.basename(actualExportPath);
+              _showSnackbar("Data exported to Files app in: $exportDirName\n(Check in Files > On My iPhone > Example)");
+            } else {
+              _showSnackbar("Data exported to $actualExportPath");
+            }
+          } catch (e) {
+            _showSnackbar("Export failed: ${e.toString()}");
+          }
         },
       );
 

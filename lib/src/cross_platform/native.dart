@@ -19,19 +19,36 @@ int _sizeOfEntity(FileSystemEntity entity) {
   return stat.size;
 }
 
-void copyDir(String from, String to) {
-  _copyDirImpl(Directory(from), Directory(to));
+String copyDir(String from, String to) {
+  final destDir = Directory(join(to, 'ditto-export-${DateTime.now().millisecondsSinceEpoch}'));
+  destDir.createSync(recursive: true);
+  _copyDirImpl(Directory(from), destDir);
+  return destDir.path;
 }
 
 void _copyDirImpl(Directory source, Directory destination) =>
     source.listSync(recursive: false).forEach((var entity) {
+      final entityName = basename(entity.path);
+      
+      // Skip lock files and system files that might be in use
+      if (entityName.startsWith('__ditto_lock') || 
+          entityName.startsWith('.') ||
+          entityName == 'lock.mdb') {
+        return;
+      }
+      
       if (entity is Directory) {
         var newDirectory =
-            Directory(join(destination.absolute.path, basename(entity.path)));
+            Directory(join(destination.absolute.path, entityName));
         newDirectory.createSync();
 
         _copyDirImpl(entity.absolute, newDirectory);
       } else if (entity is File) {
-        entity.copySync(join(destination.path, basename(entity.path)));
+        try {
+          entity.copySync(join(destination.path, entityName));
+        } catch (e) {
+          // Skip files that can't be copied (e.g., locked files)
+          // Silently skip files that cannot be copied
+        }
       }
     });

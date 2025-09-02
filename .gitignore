@@ -30,3 +30,5 @@ build/
 .flutter-plugins
 .flutter-plugins-dependencies
 example/designs
+example/.env
+example/.env

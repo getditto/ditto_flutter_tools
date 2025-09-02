@@ -1,4 +1,8 @@
 PODS:
+  - ditto_live (4.12.0):
+    - DittoFlutter (= 4.12.0)
+    - FlutterMacOS
+  - DittoFlutter (4.12.0)
   - flutter_blue_plus_darwin (0.0.2):
     - Flutter
     - FlutterMacOS
@@ -8,11 +12,18 @@ PODS:
     - FlutterMacOS
 
 DEPENDENCIES:
+  - ditto_live (from `Flutter/ephemeral/.symlinks/plugins/ditto_live/macos`)
   - flutter_blue_plus_darwin (from `Flutter/ephemeral/.symlinks/plugins/flutter_blue_plus_darwin/darwin`)
   - FlutterMacOS (from `Flutter/ephemeral`)
   - path_provider_foundation (from `Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin`)
 
+SPEC REPOS:
+  trunk:
+    - DittoFlutter
+
 EXTERNAL SOURCES:
+  ditto_live:
+    :path: Flutter/ephemeral/.symlinks/plugins/ditto_live/macos
   flutter_blue_plus_darwin:
     :path: Flutter/ephemeral/.symlinks/plugins/flutter_blue_plus_darwin/darwin
   FlutterMacOS:
@@ -21,6 +32,8 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin
 
 SPEC CHECKSUMS:
+  ditto_live: 1d391159da48309fc5511a204e153e0b6703ebb8
+  DittoFlutter: 5d40ce5f5059818ffdef0ed57502c0f65135413a
   flutter_blue_plus_darwin: 20a08bfeaa0f7804d524858d3d8744bcc1b6dbc3
   FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
   path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564

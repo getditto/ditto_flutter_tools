@@ -15,6 +15,7 @@ dependencies:
   ditto_live: ^4.12.0
   webview_flutter: ^4.8.0
   path: ^1.9.0
+  path_provider: ^2.1.5
   file_picker: ^8.1.4
   timeago: ^3.7.0
   permission_handler: ^11.3.1
