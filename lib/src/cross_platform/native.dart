@@ -44,11 +44,6 @@ void _copyDirImpl(Directory source, Directory destination) =>
 
         _copyDirImpl(entity.absolute, newDirectory);
       } else if (entity is File) {
-        try {
-          entity.copySync(join(destination.path, entityName));
-        } catch (e) {
-          // Skip files that can't be copied (e.g., locked files)
-          // Silently skip files that cannot be copied
         }
       }
     });
