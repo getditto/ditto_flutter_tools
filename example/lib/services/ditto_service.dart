@@ -78,10 +78,6 @@ class DittoService {
     //setup device information for peer listing
     ditto.deviceName = "Flutter (${ditto.deviceName})";
 
-    //not sure why this is set - need to research
-    ditto.smallPeerInfo.isEnabled = true;
-    ditto.smallPeerInfo.syncScope = SmallPeerInfoSyncScope.bigPeerOnly;
-
     ditto.startSync();
   }
 }
