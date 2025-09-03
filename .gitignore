@@ -32,3 +32,4 @@ build/
 example/designs
 example/.env
 example/.env
+android/.gradle

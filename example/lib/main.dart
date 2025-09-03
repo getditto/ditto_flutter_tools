@@ -78,7 +78,7 @@ class _DittoExampleState extends State<DittoExample> {
   //load in values from env file
   final appID =
       dotenv.env['DITTO_APP_ID'] ?? (throw Exception("env not found"));
-  final token = dotenv.env['DITTO_PLAYGROUND_TOKEN'] ??
+  final token = dotenv.env['DITTO_TOKEN'] ??
       (throw Exception("env not found"));
   final authUrl = dotenv.env['DITTO_AUTH_URL'] ?? (throw Exception("env not found"));
   final websocketUrl =

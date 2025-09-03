@@ -12,7 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  ditto_live: ^4.12.0
+  ditto_live: ^4.12.1
   webview_flutter: ^4.8.0
   path: ^1.9.0
   path_provider: ^2.1.5
@@ -20,6 +20,8 @@ dependencies:
   timeago: ^3.7.0
   permission_handler: ^11.3.1
   flutter_blue_plus: ^1.32.12
+  archive: ^3.6.1
+  share_plus: ^10.1.1
 
 dev_dependencies:
   flutter_test:

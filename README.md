@@ -2,11 +2,16 @@
 
 Diagnostic and Debugging Tools for Ditto in Flutter
 
-For support, please contact Ditto Support (<support@ditto.live>).
+> **⚠️ Platform Compatibility Notice**  
+> These tools currently do not support the **Flutter Web platform**. They are designed for mobile (iOS, Android) and desktop (macOS, Linux) platforms where Ditto's peer-to-peer functionality and file system access are available.
+
+> **📋 SDK Requirements**  
+> These tools require **Ditto SDK version 4.12.1 or higher**. Ensure your project uses a compatible Ditto version before integrating these diagnostic tools.
+> You can find the latest Ditto SDK information in the [Ditto Docs](https://docs.ditto.live/sdk/latest/install-guides/flutter).
 
 ## `PermissionsHealthView`
 
-The `PermissionsHealthView` provides a real-time monitoring interface for Ditto-related permissions, helping developers debug connectivity and peer-to-peer communication issues. This feature mimics the iOS and Android versions of the Ditto Tools.
+The `PermissionsHealthView` provides a real-time monitoring interface for network status, helping developers debug connectivity and peer-to-peer communication issues. This feature mimics the iOS and Android versions of the Ditto Tools.
 
 ### Usage
 
@@ -36,7 +41,6 @@ The implementation uses platform-specific detection to provide accurate status i
 - **Unsupported Platforms**: Shows "Unknown - Check device settings" with settings access
 
 ### Platform Support
-
 - ✅ **iOS**: Monitors Bluetooth permissions and detects simulator environments
 - ✅ **Android**: Monitors Bluetooth permissions and detects emulator environments  
 - ✅ **macOS**: Monitors Bluetooth permissions and detects simulator environments
@@ -188,69 +192,44 @@ Scaffold(
 The disk usage view provides:
 
 1. **Storage Metrics** - Displays the size of each file and directory within the Ditto persistence directory
-2. **Export Database** - Exports the entire Ditto database directory to a user-selected location
+2. **Export Database** - Exports the entire Ditto database directory using the Share Dialog 
 3. **Export Logs** - Exports Ditto debug logs to a file for troubleshooting
 
 ### Export Functionality
 
+Both export features now use the **native platform Share API** for a seamless user experience across all supported platforms.
+
 #### Export Database
-- Creates a timestamped directory (e.g., `ditto-export-1234567890`) containing a copy of the database
-- Automatically skips lock files and system files that might be in use
-- Files excluded: `__ditto_lock*`, `lock.mdb`, and hidden files (starting with `.`)
+- **ZIP Archive Creation**: Creates a compressed ZIP file containing the entire Ditto database directory
+- **Includes All Files**: Now includes lock files (`__ditto_lock*`, `lock.mdb`) and system files that were previously excluded - addressing Android lock file issues
+- **Background Processing**: ZIP creation runs in a background isolate to prevent UI blocking during large database exports
+- **Native Sharing**: Uses the platform's native share dialog to let users choose where to save or send the database export
+- **Automatic Cleanup**: Temporary files are automatically cleaned up after sharing (success or cancellation)
 
 #### Export Logs
-- Exports Ditto logs to a `ditto_log.txt` file
-- Useful for debugging sync issues or sharing logs with support
+- **Temporary File Creation**: Creates a timestamped log file (`ditto_log_[timestamp].txt`) to avoid conflicts on repeated exports
+- **Native Sharing**: Uses the platform's native share dialog for seamless export experience  
+- **Automatic Cleanup**: Temporary log files are cleaned up immediately after sharing
 
-### Platform-Specific Behavior
+### Share API Benefits
+- **Cross-Platform Consistency**: Same sharing experience on iOS, Android, macOS, and Linux
+- **Native Integration**: Users can share to any app (email, cloud storage, messaging, etc.)
+- **No Permission Management**: No need to handle file system permissions manually
+- **Robust Error Handling**: All errors are displayed to users via snackbar notifications
 
-- **iOS**: 
-  - Exports to the app's Documents directory due to iOS sandbox restrictions
-  - Files are accessible via the Files app under "On My iPhone/iPad > [Your App Name]"
-  - No directory picker is shown; files are automatically saved to Documents
+### Permissions & Configuration
 
-- **Android/macOS/Linux**: 
-  - Shows a directory picker allowing users to choose the export location
-  - Requires write permissions to the selected directory
+> [!NOTE]
+> **Share API Advantage**: Since the export functionality now uses the native Share API, **no special file system permissions are required**. The Share API handles all permission management automatically.
 
-- **Web**: 
-  - Export functionality is not supported on web platforms
-
-### Required Permissions
-
-> [!WARNING]
-> Proper permissions must be configured for the export feature to work correctly:
-
-#### iOS Configuration
-Add these keys to your `ios/Runner/Info.plist`:
-```xml
-<key>LSSupportsOpeningDocumentsInPlace</key>
-<true/>
-<key>UISupportsDocumentBrowser</key>
-<true/>
-<key>UIFileSharingEnabled</key>
-<true/>
-```
-
-#### Android Configuration
-The app needs storage permissions, which are typically handled by the file_picker package. No additional configuration is usually required, but ensure your app targets the appropriate Android SDK version.
-
-### Important Notes
-
-> [!IMPORTANT]
-> - Users must have write permissions to the selected export location
-> - On iOS, exports always go to the app's Documents directory (no location picker)
-> - Lock files and system files are automatically skipped to prevent export errors
-> - Each export creates a new timestamped directory to avoid overwriting previous exports
+#### Current Requirements
+- **No additional permissions needed** for export functionality
+- The `share_plus` package handles all platform-specific sharing requirements automatically
+- Users can share to any compatible app (email, cloud storage, messaging, etc.) through the native platform dialogs
 
 ### Dependencies
 
 The `DiskUsageView` requires:
-- `file_picker` package for directory selection (Android/macOS/Linux)
-- `path_provider` package for accessing app directories (iOS)
-- Proper platform permissions as described above
-
-## Testing
 
 ### Integration Tests
 
@@ -338,3 +317,25 @@ If integration tests can't run in your environment, manually test:
 5. Tap "Permissions Health" again
 6. Verify no crash occurs (this was the original bug)
 7. Repeat steps 4-6 multiple times to stress test
+
+## Third-Party Dependencies
+
+This package uses the following third-party libraries:
+
+### Archive Package
+- **Package**: `archive` (^3.6.1)
+- **Purpose**: Provides ZIP compression functionality for creating database export archives, especially useful on Android where lock files can cause issues with direct file operations.
+- **License**: BSD-3-Clause
+- **Repository**: https://pub.dev/packages/archive
+- **Note**: Used specifically in disk usage export functionality to create ZIP archives containing all database files (including lock files) for sharing via the Share API.
+
+### Share Plus Package  
+- **Package**: `share_plus` (^10.1.1)
+- **Purpose**: Provides native platform sharing functionality through system share dialogs, replacing manual file picker implementations.
+- **License**: BSD-3-Clause
+- **Repository**: https://pub.dev/packages/share_plus
+- **Note**: Used for all export functionality (logs and database) to provide a consistent, native sharing experience across iOS, Android, macOS, and Linux platforms.
+
+## Support
+
+For support, please contact Ditto Support (<support@ditto.live>).

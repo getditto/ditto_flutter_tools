@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:archive/archive_io.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 
 List<(String, int)> directorySizeSummary(String directory) =>
@@ -19,31 +21,87 @@ int _sizeOfEntity(FileSystemEntity entity) {
   return stat.size;
 }
 
-String copyDir(String from, String to) {
-  final destDir = Directory(join(to, 'ditto-export-${DateTime.now().millisecondsSinceEpoch}'));
-  destDir.createSync(recursive: true);
-  _copyDirImpl(Directory(from), destDir);
-  return destDir.path;
+Future<String> copyDirToZipFile(String from, String to) async {
+  final sourceDir = Directory(from);
+  final parentDir = sourceDir.parent;
+  final tempZipPath = join(parentDir.path, 'ditto-temp-export-${DateTime.now().millisecondsSinceEpoch}.zip');
+  
+  try {
+    // Create zip file in background isolate to avoid blocking UI
+    await compute(_createZipFile, _ZipParams(from, tempZipPath));
+    
+    // Copy zip to destination as the final result (async)
+    final zipFile = File(tempZipPath);
+    final destZipPath = join(to, 'ditto-export-${DateTime.now().millisecondsSinceEpoch}.zip');
+    await zipFile.copy(destZipPath);
+    
+    return destZipPath;
+    
+  } finally {
+    // Clean up temporary zip file (async)
+    final tempZip = File(tempZipPath);
+    if (await tempZip.exists()) {
+      await tempZip.delete();
+    }
+  }
 }
 
-void _copyDirImpl(Directory source, Directory destination) =>
-    source.listSync(recursive: false).forEach((var entity) {
-      final entityName = basename(entity.path);
-      
-      // Skip lock files and system files that might be in use
-      if (entityName.startsWith('__ditto_lock') || 
-          entityName.startsWith('.') ||
-          entityName == 'lock.mdb') {
-        return;
-      }
-      
-      if (entity is Directory) {
-        var newDirectory =
-            Directory(join(destination.absolute.path, entityName));
-        newDirectory.createSync();
+/// Parameters for ZIP creation in isolate
+class _ZipParams {
+  final String sourceDir;
+  final String outputPath;
+  
+  _ZipParams(this.sourceDir, this.outputPath);
+}
 
-        _copyDirImpl(entity.absolute, newDirectory);
-      } else if (entity is File) {
-        }
-      }
-    });
+/// Creates ZIP file in background isolate to prevent UI blocking
+void _createZipFile(_ZipParams params) {
+  final encoder = ZipFileEncoder();
+  encoder.create(params.outputPath);
+  encoder.addDirectory(Directory(params.sourceDir), includeDirName: false);
+  encoder.close();
+}
+
+/// Creates a temporary ZIP file for sharing (doesn't copy to destination)
+Future<String> createTempZipForSharing(String sourceDir) async {
+  try {
+    // Verify source directory exists
+    final sourceDirectory = Directory(sourceDir);
+    if (!await sourceDirectory.exists()) {
+      throw Exception('Source directory does not exist: $sourceDir');
+    }
+    
+    final tempDir = Directory.systemTemp;
+    final tempZipPath = join(tempDir.path, 'ditto-export-${DateTime.now().millisecondsSinceEpoch}.zip');
+    
+    // Create zip file in background isolate to avoid blocking UI
+    await compute(_createZipFile, _ZipParams(sourceDir, tempZipPath));
+    
+    // Verify ZIP file was created successfully
+    final zipFile = File(tempZipPath);
+    if (!await zipFile.exists()) {
+      throw Exception('Failed to create ZIP file');
+    }
+    
+    final zipSize = await zipFile.length();
+    if (zipSize == 0) {
+      throw Exception('Created ZIP file is empty');
+    }
+    
+    return tempZipPath;
+  } catch (e) {
+    throw Exception('Failed to create database export: ${e.toString()}');
+  }
+}
+
+/// Safely deletes a temporary file
+Future<void> deleteTemporaryFile(String filePath) async {
+  try {
+    final file = File(filePath);
+    if (await file.exists()) {
+      await file.delete();
+    }
+  } catch (e) {
+    // Ignore deletion errors - temp files will be cleaned up by system eventually
+  }
+}
