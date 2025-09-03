@@ -1,8 +1,8 @@
 PODS:
-  - ditto_live (4.12.0):
-    - DittoFlutter (= 4.12.0)
+  - ditto_live (4.12.1):
+    - DittoFlutter (= 4.12.1)
     - FlutterMacOS
-  - DittoFlutter (4.12.0)
+  - DittoFlutter (4.12.1)
   - flutter_blue_plus_darwin (0.0.2):
     - Flutter
     - FlutterMacOS
@@ -37,8 +37,8 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral/.symlinks/plugins/share_plus/macos
 
 SPEC CHECKSUMS:
-  ditto_live: 1d391159da48309fc5511a204e153e0b6703ebb8
-  DittoFlutter: 5d40ce5f5059818ffdef0ed57502c0f65135413a
+  ditto_live: 4dd96ea57eb5ccdfe7faf6e449a8eb70a5a3bc39
+  DittoFlutter: 261af21f8f2aeb15699d97413604ff4df88f846d
   flutter_blue_plus_darwin: 20a08bfeaa0f7804d524858d3d8744bcc1b6dbc3
   FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
   path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
