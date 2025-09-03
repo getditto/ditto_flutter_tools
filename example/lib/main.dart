@@ -77,12 +77,12 @@ class DittoExample extends StatefulWidget {
 class _DittoExampleState extends State<DittoExample> {
   //load in values from env file
   final appID =
-      dotenv.env['DITTO_APP_ID'] ?? (throw Exception("env not found"));
+      dotenv.env['DITTO_APP_ID'] ?? (throw Exception("DITTO_APP_ID not found in .env file"));
   final token = dotenv.env['DITTO_TOKEN'] ??
-      (throw Exception("env not found"));
-  final authUrl = dotenv.env['DITTO_AUTH_URL'] ?? (throw Exception("env not found"));
+      (throw Exception("DITTO_TOKEN not found in .env file"));
+  final authUrl = dotenv.env['DITTO_AUTH_URL'] ?? (throw Exception("DITTO_AUTH_URL not found in .env file"));
   final websocketUrl =
-      dotenv.env['DITTO_WEBSOCKET_URL'] ?? (throw Exception("env not found"));
+      dotenv.env['DITTO_WEBSOCKET_URL'] ?? (throw Exception("DITTO_WEBSOCKET_URL not found in .env file"));
   DittoService? _dittoService;
   SubscriptionService? _subscriptionService;
   bool _isInitializing = true;
