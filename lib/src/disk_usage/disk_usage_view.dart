@@ -64,10 +64,12 @@ class _DiskUsageViewState extends State<DiskUsageView> {
 
               // Verify log file was created
               final logFile = XFile(tempLogPath);
-              if (!await logFile
-                  .length()
-                  .then((len) => len > 0)
-                  .catchError((_) => false)) {
+              try {
+                final len = await logFile.length();
+                if (len <= 0) {
+                  throw Exception('Log file is empty or could not be created');
+                }
+              } catch (_) {
                 throw Exception('Log file is empty or could not be created');
               }
 
