@@ -21,31 +21,6 @@ int _sizeOfEntity(FileSystemEntity entity) {
   return stat.size;
 }
 
-Future<String> copyDirToZipFile(String from, String to) async {
-  final sourceDir = Directory(from);
-  final parentDir = sourceDir.parent;
-  final tempZipPath = join(parentDir.path, 'ditto-temp-export-${DateTime.now().millisecondsSinceEpoch}.zip');
-  
-  try {
-    // Create zip file in background isolate to avoid blocking UI
-    await compute(_createZipFile, _ZipParams(from, tempZipPath));
-    
-    // Copy zip to destination as the final result (async)
-    final zipFile = File(tempZipPath);
-    final destZipPath = join(to, 'ditto-export-${DateTime.now().millisecondsSinceEpoch}.zip');
-    await zipFile.copy(destZipPath);
-    
-    return destZipPath;
-    
-  } finally {
-    // Clean up temporary zip file (async)
-    final tempZip = File(tempZipPath);
-    if (await tempZip.exists()) {
-      await tempZip.delete();
-    }
-  }
-}
-
 /// Parameters for ZIP creation in isolate
 class _ZipParams {
   final String sourceDir;
