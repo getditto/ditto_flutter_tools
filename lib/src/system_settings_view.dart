@@ -1,7 +1,5 @@
 import 'package:ditto_live/ditto_live.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'dart:convert';
 
 class SystemSettingsView extends StatefulWidget {
   final Ditto ditto;
@@ -63,9 +61,10 @@ class _SystemSettingsViewState extends State<SystemSettingsView> {
   }
 
   List<MapEntry<String, dynamic>> _getFilteredSettings() {
-    if (_settings == null) return [];
+    final settings = _settings;
+    if (settings == null) return [];
     
-    final entries = _settings!.entries.toList()
+    final entries = settings.entries.toList()
       ..sort((a, b) => a.key.compareTo(b.key));
 
     if (_searchQuery.isEmpty) {
@@ -182,8 +181,9 @@ class _SystemSettingsViewState extends State<SystemSettingsView> {
         ),
         const Divider(),
         Expanded(
-          child: ListView.builder(
+          child: ListView.separated(
             itemCount: filteredSettings.length,
+            separatorBuilder: (context, index) => const Divider(),
             itemBuilder: (context, index) {
               final entry = filteredSettings[index];
               return _SettingTile(
@@ -207,164 +207,31 @@ class _SettingTile extends StatelessWidget {
     required this.value,
   });
 
-  String _formatValue(dynamic val) {
-    if (val == null) return 'null';
-    
-    if (val is bool) {
-      return val ? 'true' : 'false';
-    }
-    
-    if (val is num) {
-      return val.toString();
-    }
-    
-    if (val is String) {
-      return val.isEmpty ? '(empty)' : val;
-    }
-    
-    if (val is List) {
-      if (val.isEmpty) return '[]';
-      try {
-        return const JsonEncoder.withIndent('  ').convert(val);
-      } catch (_) {
-        return val.toString();
-      }
-    }
-    
-    if (val is Map) {
-      if (val.isEmpty) return '{}';
-      try {
-        return const JsonEncoder.withIndent('  ').convert(val);
-      } catch (_) {
-        return val.toString();
-      }
-    }
-    
-    return val.toString();
-  }
-
-  Widget _buildValueWidget(BuildContext context) {
-    if (value is bool) {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: value 
-              ? Colors.green.withValues(alpha: 0.2)
-              : Colors.grey.withValues(alpha: 0.2),
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: Text(
-          value ? 'true' : 'false',
-          style: TextStyle(
-            color: value ? Colors.green : Colors.grey[600],
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      );
-    }
-    
-    if (value is num) {
-      return Text(
-        _formatValue(value),
-        style: TextStyle(
-          color: Theme.of(context).colorScheme.primary,
-          fontFamily: 'monospace',
-        ),
-      );
-    }
-    
-    if (value is String && value.isNotEmpty) {
-      return Text(
-        value.length > 30 ? '${value.substring(0, 30)}...' : value,
-        style: const TextStyle(fontFamily: 'monospace'),
-      );
-    }
-    
-    if (value is List || value is Map) {
-      final itemCount = value is List ? value.length : (value as Map).length;
-      final type = value is List ? 'array' : 'object';
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.secondaryContainer,
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: Text(
-          '$type ($itemCount items)',
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.onSecondaryContainer,
-            fontSize: 12,
-          ),
-        ),
-      );
-    }
-    
-    return Text(
-      _formatValue(value),
-      style: const TextStyle(fontFamily: 'monospace'),
-    );
-  }
-
-  void _showDetailDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  settingKey,
-                  style: const TextStyle(fontSize: 16),
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.copy, size: 20),
-                onPressed: () {
-                  final formattedValue = _formatValue(value);
-                  Clipboard.setData(ClipboardData(
-                    text: '$settingKey: $formattedValue',
-                  ));
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Copied to clipboard'),
-                      duration: Duration(seconds: 1),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-          content: SingleChildScrollView(
+  Widget _buildSimpleValue() {
+    if (value is Map || value is List) {
+      return ExpansionTile(
+        title: Text(settingKey),
+        subtitle: Text(value.toString()),
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
             child: SelectableText(
-              _formatValue(value),
+              value.toString(),
               style: const TextStyle(fontFamily: 'monospace'),
             ),
           ),
-          actions: [
-            TextButton(
-              child: const Text('Close'),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-          ],
-        );
-      },
+        ],
+      );
+    }
+
+    return ListTile(
+      title: Text(settingKey),
+      subtitle: Text(value.toString()),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final needsExpansion = value is List || value is Map;
-    
-    return ListTile(
-      title: Text(
-        settingKey,
-        style: const TextStyle(fontFamily: 'monospace', fontSize: 14),
-      ),
-      trailing: _buildValueWidget(context),
-      onTap: needsExpansion || (value is String && value.length > 30)
-          ? () => _showDetailDialog(context)
-          : null,
-    );
+    return _buildSimpleValue();
   }
 }

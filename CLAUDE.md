@@ -137,3 +137,17 @@ Repository: https://github.com/getditto/ditto_flutter_tools
 
 # Code Style
 - Always recommend dart code vs trying to use native code in Swift or Kotlin, etc.   If required, look for 3rd party libraries that might be available that publish solutions that work in all platforms (mac, linux, windows, android, ios, web).
+
+- If you're rendering a list of items, use ListView even if you only have one string you want to display: ListView(title: Text(string))
+   - If you have multiple, use subtitle as well 
+   - If you need the option for lots of text, use ExpansionTile
+   - NO hardcoding theme stuff, since Flutter users expect to be able to override these values via Theme
+
+- In general, pulling larger chunks of UI out into getters really helps readability, e.g.
+
+class MyState extends State<MyWidget> {
+  // ...
+
+  Widget get something => ListTile(/* ... */ );
+}
+Flutter has an insane problem with rightward drift, and this is one of the few tools we have to combat it

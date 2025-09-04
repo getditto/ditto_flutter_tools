@@ -287,11 +287,7 @@ class _MainListView extends StatelessWidget {
                     );
                   },
                 ),
-                Divider(
-                    height: 1,
-                    color:
-                        Theme.of(context).colorScheme.outline.withOpacity(0.3),
-                    indent: 56),
+                const Divider(),
                 ListTile(
                   leading: Container(
                     width: 32,
@@ -410,11 +406,7 @@ class _MainListView extends StatelessWidget {
                     );
                   },
                 ),
-                Divider(
-                    height: 1,
-                    color:
-                        Theme.of(context).colorScheme.outline.withOpacity(0.3),
-                    indent: 56),
+                const Divider(),
                 ListTile(
                   leading: Container(
                     width: 32,
@@ -456,11 +448,7 @@ class _MainListView extends StatelessWidget {
                     );
                   },
                 ),
-                Divider(
-                    height: 1,
-                    color:
-                        Theme.of(context).colorScheme.outline.withOpacity(0.3),
-                    indent: 56),
+                const Divider(),
                 ListTile(
                   leading: Container(
                     width: 32,
@@ -484,8 +472,10 @@ class _MainListView extends StatelessWidget {
                         pageBuilder: (context, animation, secondaryAnimation) =>
                             Material(
                           child: Scaffold(
-                            appBar: AppBar(title: const Text("System Settings")),
-                            body: SystemSettingsView(ditto: dittoService.ditto!),
+                            appBar:
+                                AppBar(title: const Text("System Settings")),
+                            body:
+                                SystemSettingsView(ditto: dittoService.ditto!),
                           ),
                         ),
                         transitionsBuilder:
