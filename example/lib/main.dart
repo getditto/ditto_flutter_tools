@@ -287,11 +287,7 @@ class _MainListView extends StatelessWidget {
                     );
                   },
                 ),
-                Divider(
-                    height: 1,
-                    color:
-                        Theme.of(context).colorScheme.outline.withOpacity(0.3),
-                    indent: 56),
+                const Divider(),
                 ListTile(
                   leading: Container(
                     width: 32,
@@ -410,11 +406,7 @@ class _MainListView extends StatelessWidget {
                     );
                   },
                 ),
-                Divider(
-                    height: 1,
-                    color:
-                        Theme.of(context).colorScheme.outline.withOpacity(0.3),
-                    indent: 56),
+                const Divider(),
                 ListTile(
                   leading: Container(
                     width: 32,
@@ -440,6 +432,50 @@ class _MainListView extends StatelessWidget {
                           child: Scaffold(
                             appBar: AppBar(title: const Text("Disk Usage")),
                             body: DiskUsageView(ditto: dittoService.ditto!),
+                          ),
+                        ),
+                        transitionsBuilder:
+                            (context, animation, secondaryAnimation, child) {
+                          return SlideTransition(
+                            position: Tween<Offset>(
+                              begin: const Offset(1.0, 0.0),
+                              end: Offset.zero,
+                            ).animate(animation),
+                            child: child,
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
+                const Divider(),
+                ListTile(
+                  leading: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: Colors.orange,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.settings,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                  title: const Text("System Settings"),
+                  trailing: Icon(Icons.chevron_right,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            Material(
+                          child: Scaffold(
+                            appBar:
+                                AppBar(title: const Text("System Settings")),
+                            body:
+                                SystemSettingsView(ditto: dittoService.ditto!),
                           ),
                         ),
                         transitionsBuilder:

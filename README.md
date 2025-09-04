@@ -112,6 +112,71 @@ Both export features now use the **native platform Share API** for a seamless us
 - The `share_plus` package handles all platform-specific sharing requirements automatically
 - Users can share to any compatible app (email, cloud storage, messaging, etc.) through the native platform dialogs
 
+## `SystemSettingsView`
+
+The `SystemSettingsView` provides a comprehensive interface for viewing and inspecting all Ditto system configuration settings. This diagnostic tool helps developers understand the current runtime configuration of their Ditto instance by displaying all system parameters retrieved using the `SHOW ALL` DQL statement.
+
+### Usage
+
+The `SystemSettingsView` can be used as a standalone widget in your Flutter application:
+
+```dart
+import 'package:ditto_flutter_tools/ditto_flutter_tools.dart';
+
+// In your widget build method
+Scaffold(
+  appBar: AppBar(title: Text('System Settings')),
+  body: SystemSettingsView(ditto: myDittoInstance),
+)
+```
+
+### Features
+
+The system settings view provides:
+
+1. **Dynamic Settings Display** - Automatically displays all available system settings without hardcoded keys, adapting to different Ditto SDK versions
+2. **Search Functionality** - Real-time search/filter to quickly find specific settings by key or value
+3. **Smart Value Formatting** - Intelligent display of different data types (boolean, number, string, array, object)
+4. **Detailed View** - Expandable detail dialog for complex values (arrays, objects, long strings)
+5. **Copy to Clipboard** - Easy copying of setting key-value pairs for debugging or documentation
+6. **Live Refresh** - Manual refresh button to reload settings and see configuration changes
+
+### Settings Information Displayed
+
+The view displays all system configuration parameters including but not limited to:
+- **Replication Settings** - Parameters controlling data synchronization behavior
+- **Network Settings** - Configuration for mesh networking, routing, and transports
+- **Storage Settings** - Database and blob store configuration
+- **Performance Settings** - Timeout values, batch sizes, and optimization parameters
+- **Feature Flags** - Enabled/disabled features and experimental options
+
+### Value Visualization
+
+Different data types are displayed with appropriate formatting:
+- **Booleans** - Color-coded badges (green for true, grey for false)
+- **Numbers** - Monospace font for easy reading
+- **Strings** - Truncated with full view on tap for long values
+- **Arrays/Objects** - Compact badge showing type and item count, expandable for full JSON view
+- **Empty Values** - Clear indication of empty arrays, objects, or strings
+
+### Real-time Search
+
+The search feature allows filtering by:
+- Setting key names (e.g., searching for "replication" shows all replication-related settings)
+- Setting values (e.g., searching for "true" shows all boolean settings that are enabled)
+- Case-insensitive matching for convenience
+
+### Platform Support
+- ✅ **iOS**: Full support
+- ✅ **Android**: Full support
+- ✅ **macOS**: Full support
+- ✅ **Linux**: Full support
+- ✅ **Web**: Full support (when Ditto Web SDK supports DQL execution)
+
+### Documentation Reference
+
+For more information about system settings and the `SHOW ALL` DQL statement, see the [Ditto documentation on retrieving system values](https://docs.ditto.live/sdk/latest/sync/using-alter-system#retrieving-values).
+
 ## `SyncStatusHelper` and `SyncStatusView`
 
 These tools are intended to provide insights into the status of your subscriptions.
