@@ -269,7 +269,7 @@ The implementation uses platform-specific detection to provide accurate status i
 - Bluetooth permission checking (all platforms)
 - Simulator/emulator detection (iOS/Android)
 - Settings navigation (platform-specific)
-- Web platform detection and messaging
+
 ### Dependencies
 
 The `PermissionsHealthView` uses the `permission_handler` package to check and request permissions. Make sure your app includes the necessary platform-specific configurations based on the Ditto documentation at:[https://docs.ditto.live/sdk/latest/install-guides/flutter#step-1%3A-add-the-ditto-dependency](https://docs.ditto.live/sdk/latest/install-guides/flutter#step-1%3A-add-the-ditto-dependency)
