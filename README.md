@@ -378,6 +378,121 @@ This package uses the following third-party libraries:
 - **Repository**: https://pub.dev/packages/share_plus
 - **Note**: Used for all export functionality (logs and database) to provide a consistent, native sharing experience across iOS, Android, macOS, and Linux platforms.
 
+## `QueryEditorView`
+
+The `QueryEditorView` provides an interactive interface for executing DQL (Ditto Query Language) statements against your Ditto database. This tool helps developers test queries, inspect data, and perform CRUD operations during development and debugging.
+
+### Usage
+
+The `QueryEditorView` can be used as a standalone widget in your Flutter application:
+
+```dart
+import 'package:ditto_flutter_tools/ditto_flutter_tools.dart';
+
+// In your widget build method
+Scaffold(
+  appBar: AppBar(title: Text('Query Editor')),
+  body: QueryEditorView(ditto: myDittoInstance),
+)
+```
+
+Or navigate to it from your debug menu:
+
+```dart
+Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (context) => QueryEditorView(ditto: ditto),
+  ),
+);
+```
+
+### Features
+
+The query editor provides:
+
+1. **Multi-line Query Input** - A text field for entering DQL statements with syntax hints
+2. **Async Query Execution** - Non-blocking query execution with loading indicator
+3. **Result Display** - Scrollable list showing query results or mutation outcomes
+4. **Error Handling** - Clear error messages for invalid queries or execution failures
+5. **Multiple Query Types** - Supports SELECT, INSERT, UPDATE, and DELETE operations
+
+### Supported DQL Operations
+
+#### SELECT (Read Operations)
+Retrieve documents from collections:
+```sql
+SELECT * FROM tasks
+SELECT * FROM tasks WHERE status = 'pending'
+SELECT * FROM users WHERE age > 21
+```
+Results display each document using its `toString()` representation.
+
+#### INSERT (Create Operations)
+Add new documents to collections:
+```sql
+INSERT INTO tasks DOCUMENTS (:doc)
+INSERT INTO users DOCUMENTS (:user1), (:user2)
+```
+Note: For parameterized queries, you'll need to modify the code to pass arguments.
+
+#### UPDATE (Modify Operations)
+Update existing documents:
+```sql
+UPDATE tasks SET status = 'complete' WHERE _id = '123'
+UPDATE users SET age = 30 WHERE name = 'John'
+```
+Results show the IDs of modified documents.
+
+#### DELETE (Remove Operations)  
+Delete documents from collections:
+```sql
+DELETE FROM tasks WHERE _id = '123'
+DELETE FROM users WHERE age < 18
+```
+Results show the IDs of deleted documents.
+
+### Query Results
+
+The view handles two types of results:
+
+1. **Query Results (SELECT)**: Displays each document as a separate item in the scrollable list
+2. **Mutation Results (INSERT/UPDATE/DELETE)**: Shows:
+   - List of affected document IDs
+   - Number of documents modified
+   - Transaction/commit ID when available
+
+### UI Features
+
+- **Play Button**: Located in the app bar for executing queries
+- **Loading Spinner**: Shows during query execution, preventing multiple simultaneous queries
+- **Results Counter**: Displays the number of items returned
+- **Scrollable Results**: Large result sets can be scrolled through easily
+- **Selectable Text**: Query results can be selected and copied
+- **Error Display**: Clear error messages with icon for failed queries
+
+### Best Practices
+
+1. **Test Queries First**: Use SELECT queries to verify data before running mutations
+2. **Start Simple**: Begin with basic queries before adding complex conditions
+3. **Check Collections**: Verify collection names match your data model
+4. **Monitor Results**: Review mutation results to confirm expected changes
+
+### DQL Documentation
+
+For comprehensive DQL syntax and examples, refer to the official Ditto documentation:
+- [Read Operations](https://docs.ditto.live/sdk/latest/crud/read)
+- [Create Operations](https://docs.ditto.live/sdk/latest/crud/create)
+- [Update Operations](https://docs.ditto.live/sdk/latest/crud/update)
+- [Delete Operations](https://docs.ditto.live/sdk/latest/crud/delete)
+
+### Limitations
+
+- **No Parameter UI**: Parameterized queries (using `:parameter` syntax) require code modification to pass arguments
+- **Text-Only Display**: Results are shown as text using `toString()`, not formatted JSON
+- **No Syntax Highlighting**: The query input field doesn't provide syntax highlighting
+- **Single Query Execution**: Only one query can be executed at a time
+
 ## Support
 
 For support, please contact Ditto Support (<support@ditto.live>).
