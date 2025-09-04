@@ -445,7 +445,7 @@ This package uses the following third-party libraries:
 
 ## `QueryEditorView`
 
-The `QueryEditorView` provides an interactive interface for executing DQL (Ditto Query Language) statements against your Ditto database. This tool helps developers test queries, inspect data, and perform CRUD operations during development and debugging.
+The `QueryEditorView` provides an interactive interface for executing DQL (Ditto Query Language) statements against your Ditto database. This tool helps developers test queries, inspect data, and perform CRUD operations during development and debugging, with built-in export functionality for query results.
 
 ### Usage
 
@@ -477,10 +477,28 @@ Navigator.push(
 The query editor provides:
 
 1. **Multi-line Query Input** - A text field for entering DQL statements with syntax hints
-2. **Async Query Execution** - Non-blocking query execution with loading indicator
-3. **Result Display** - Scrollable list showing query results or mutation outcomes
-4. **Error Handling** - Clear error messages for invalid queries or execution failures
-5. **Multiple Query Types** - Supports SELECT, INSERT, UPDATE, and DELETE operations
+2. **Async Query Execution** - Non-blocking query execution with loading indicator  
+3. **Paginated Results Display** - Large result sets with configurable pagination (10, 25, 50, 100 items per page)
+4. **Export Functionality** - Share query results as JSON files using the native Share API
+5. **Error Handling** - Clear error messages for invalid queries or execution failures
+6. **Multiple Query Types** - Supports SELECT, INSERT, UPDATE, and DELETE operations
+
+### Export Functionality
+
+The query editor includes built-in export capabilities:
+
+#### Share Results
+- **Smart Export**: Share button only appears when query results contain actual data (not status messages)
+- **JSON Format**: Results are exported as raw JSON data without formatting or metadata
+- **Native Sharing**: Uses the platform's native share dialog for seamless export experience
+- **Cross-Platform**: Works consistently on mobile, desktop, and web platforms
+- **Automatic Cleanup**: Temporary files are automatically cleaned up after sharing
+
+#### Export Features
+- **JSON Files**: Query results are exported with `.json` extension and proper MIME type
+- **Timestamped Filenames**: Exported files include timestamp to avoid conflicts (`ditto_query_results_[timestamp].json`)
+- **Raw Data Only**: Exports only the actual query result data, no headers or formatting
+- **Real-time Status**: User feedback through snackbar notifications for export status
 
 ### Supported DQL Operations
 
@@ -488,10 +506,10 @@ The query editor provides:
 Retrieve documents from collections:
 ```sql
 SELECT * FROM tasks
-SELECT * FROM tasks WHERE status = 'pending'
+SELECT * FROM tasks WHERE status = 'pending'  
 SELECT * FROM users WHERE age > 21
 ```
-Results display each document using its `toString()` representation.
+Results display each document and can be exported as JSON.
 
 #### INSERT (Create Operations)
 Add new documents to collections:
@@ -507,56 +525,65 @@ Update existing documents:
 UPDATE tasks SET status = 'complete' WHERE _id = '123'
 UPDATE users SET age = 30 WHERE name = 'John'
 ```
-Results show the IDs of modified documents.
+Results show the IDs of modified documents (no export available for mutation operations).
 
-#### DELETE (Remove Operations)  
+#### DELETE (Remove Operations)
 Delete documents from collections:
 ```sql
 DELETE FROM tasks WHERE _id = '123'
 DELETE FROM users WHERE age < 18
 ```
-Results show the IDs of deleted documents.
+Results show the IDs of deleted documents (no export available for mutation operations).
 
-### Query Results
+### Query Results & Pagination
 
-The view handles two types of results:
+The view handles multiple result types with advanced pagination:
 
-1. **Query Results (SELECT)**: Displays each document as a separate item in the scrollable list
-2. **Mutation Results (INSERT/UPDATE/DELETE)**: Shows:
+1. **Query Results (SELECT)**: 
+   - Each document displayed as a separate item
+   - Configurable pagination (10, 25, 50, 100 items per page)
+   - Page navigation controls with direct page input
+   - Results counter showing total items and current page range
+   - Export functionality available for data results
+
+2. **Mutation Results (INSERT/UPDATE/DELETE)**: 
    - List of affected document IDs
-   - Number of documents modified
+   - Number of documents modified  
    - Transaction/commit ID when available
+   - No export functionality (status messages only)
 
 ### UI Features
 
-- **Play Button**: Located in the app bar for executing queries
-- **Loading Spinner**: Shows during query execution, preventing multiple simultaneous queries
-- **Results Counter**: Displays the number of items returned
-- **Scrollable Results**: Large result sets can be scrolled through easily
-- **Selectable Text**: Query results can be selected and copied
-- **Error Display**: Clear error messages with icon for failed queries
+- **Execution Controls**: Play button in app bar for executing queries with loading spinner
+- **Share Button**: Export icon in app bar (enabled only when exportable results exist)
+- **Responsive Pagination**: Adaptive pagination controls for mobile and desktop layouts
+- **Page Navigation**: Direct page input, previous/next buttons, and items-per-page selector
+- **Results Display**: Selectable text with monospace formatting for easy reading
+- **Error Handling**: Clear error messages with warning icons for failed queries
+- **Real-time Feedback**: Snackbar notifications for execution and export status
+
+### Web Platform Support
+
+The `QueryEditorView` includes full web platform compatibility:
+- **Cross-Platform Sharing**: Detects web environment and uses appropriate sharing mechanisms
+- **No File System Dependencies**: Avoids web-incompatible file operations like `path_provider`
+- **Native Web Share API**: Leverages browser sharing capabilities when available
 
 ### Best Practices
 
 1. **Test Queries First**: Use SELECT queries to verify data before running mutations
-2. **Start Simple**: Begin with basic queries before adding complex conditions
-3. **Check Collections**: Verify collection names match your data model
-4. **Monitor Results**: Review mutation results to confirm expected changes
+2. **Export Results**: Use the share functionality to save query results for analysis
+3. **Manage Large Datasets**: Utilize pagination controls for better performance with large result sets
+4. **Start Simple**: Begin with basic queries before adding complex conditions
+5. **Check Collections**: Verify collection names match your data model
 
 ### DQL Documentation
 
 For comprehensive DQL syntax and examples, refer to the official Ditto documentation:
 - [Read Operations](https://docs.ditto.live/sdk/latest/crud/read)
-- [Create Operations](https://docs.ditto.live/sdk/latest/crud/create)
+- [Create Operations](https://docs.ditto.live/sdk/latest/crud/create)  
 - [Update Operations](https://docs.ditto.live/sdk/latest/crud/update)
 - [Delete Operations](https://docs.ditto.live/sdk/latest/crud/delete)
-
-### Limitations
-
-- **No Parameter UI**: Parameterized queries (using `:parameter` syntax) require code modification to pass arguments
-- **Text-Only Display**: Results are shown as text using `toString()`, not formatted JSON
-- **No Syntax Highlighting**: The query input field doesn't provide syntax highlighting
-- **Single Query Execution**: Only one query can be executed at a time
 
 ## Support
 
