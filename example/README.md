@@ -48,15 +48,27 @@ This example app showcases all the diagnostic tools available in the `ditto_flut
 
 3. **Configure Ditto credentials**:
    
-   Open `lib/main.dart` and update the following constants with your Ditto credentials:
-   ```dart
-   const appID = "YOUR_APP_ID";
-   const token = "YOUR_TOKEN";
-   const authUrl = "https://YOUR_APP.cloud.dittolive.app";
-   const websocketUrl = "wss://YOUR_APP.cloud.dittolive.app";
+   Create an environment file from the provided sample:
+   ```bash
+   cp .env.sample .env
+   ```
+   
+   Open the `.env` file and add your Ditto credentials:
+   ```bash
+   DITTO_APP_ID="your-app-id-here"
+   DITTO_PLAYGROUND_TOKEN="your-playground-token-here"
+   DITTO_AUTH_URL="https://your-app.cloud.dittolive.app"
+   DITTO_WEBSOCKET_URL="wss://your-app.cloud.dittolive.app"
    ```
 
-   You can get these credentials from the [Ditto Portal](https://portal.ditto.live).
+   You can obtain these credentials from the [Ditto Portal](https://portal.ditto.live):
+   - Log in to your Ditto account
+   - Create or select an app
+   - Navigate to the "Settings" tab to find your App ID
+   - Get your Playground token from the "Authentication" section
+   - The Auth URL and WebSocket URL will be displayed in your app settings
+   
+   **Important**: Never commit the `.env` file to version control. It's already included in `.gitignore` to prevent accidental commits.
 
 4. **Run the app**:
    ```bash
@@ -169,9 +181,10 @@ MaterialApp(
 ## Troubleshooting
 
 ### App Won't Initialize
-- Verify your Ditto credentials are correct
+- Verify your `.env` file exists (copy from `.env.sample` if missing)
+- Check that all credentials in `.env` are filled in correctly
 - Ensure you have an active internet connection
-- Check that your Ditto app is active in the portal
+- Verify that your Ditto app is active in the portal
 
 ### Permissions Issues
 - On iOS: Go to Settings > Privacy and ensure Bluetooth and Local Network are enabled

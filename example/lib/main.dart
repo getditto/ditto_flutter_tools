@@ -4,18 +4,15 @@ import 'package:ditto_flutter_tools/ditto_flutter_tools.dart';
 import 'package:example/services/subscription_service.dart';
 import 'package:example/widgets/presence.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'services/ditto_service.dart';
 
-const appID = "REPLACE_ME_WITH_YOUR_APP_ID";
-const token = "REPLACE_ME_WITH_YOUR_ONLINE_PLAYGROUND_TOKEN";
-const authUrl = "REPLACE_ME_WITH_YOUR_AUTH_URL";
-const websocketUrl = "REPLACE_ME_WITH_WEBSOCKET_URL";
-
-const authAppID = "REPLACE_ME_WITH_YOUR_APP_ID";
-
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  //load the .env file to get portal information
+  await dotenv.load(fileName: ".env");
 
   runApp(const DittoApp());
 }
@@ -78,6 +75,14 @@ class DittoExample extends StatefulWidget {
 }
 
 class _DittoExampleState extends State<DittoExample> {
+  //load in values from env file
+  final appID =
+      dotenv.env['DITTO_APP_ID'] ?? (throw Exception("DITTO_APP_ID not found in .env file"));
+  final token = dotenv.env['DITTO_TOKEN'] ??
+      (throw Exception("DITTO_TOKEN not found in .env file"));
+  final authUrl = dotenv.env['DITTO_AUTH_URL'] ?? (throw Exception("DITTO_AUTH_URL not found in .env file"));
+  final websocketUrl =
+      dotenv.env['DITTO_WEBSOCKET_URL'] ?? (throw Exception("DITTO_WEBSOCKET_URL not found in .env file"));
   DittoService? _dittoService;
   SubscriptionService? _subscriptionService;
   bool _isInitializing = true;

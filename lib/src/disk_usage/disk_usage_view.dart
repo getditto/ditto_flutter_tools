@@ -1,8 +1,9 @@
 import 'package:ditto_flutter_tools/src/util.dart';
 import 'package:ditto_live/ditto_live.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../cross_platform/cross_platform.dart';
 
@@ -48,12 +49,55 @@ class _DiskUsageViewState extends State<DiskUsageView> {
         label: const Text("Export Logs"),
         icon: const Icon(Icons.bug_report),
         onPressed: () async {
-          // i would use "saveFile" but for some reason it crashes
-          final dir = await FilePicker.platform.getDirectoryPath();
-          if (dir == null) return;
-          final path = p.join(dir, "ditto_log.txt");
-          await DittoLogger.exportLogs(path);
-          _showSnackbar("Logs exported to $path");
+          try {
+            _showSnackbar("Preparing logs for sharing...");
+
+            // Create temporary log file with unique name to avoid conflicts
+            final tempDir = await getTemporaryDirectory();
+            final timestamp = DateTime.now().millisecondsSinceEpoch;
+            final tempLogPath =
+                p.join(tempDir.path, "ditto_log_$timestamp.txt");
+
+            try {
+              // Export logs to temporary file
+              await DittoLogger.exportLogs(tempLogPath);
+
+              // Verify log file was created
+              final logFile = XFile(tempLogPath);
+              try {
+                final len = await logFile.length();
+                if (len <= 0) {
+                  throw Exception('Log file is empty or could not be created');
+                }
+              } catch (_) {
+                throw Exception('Log file is empty or could not be created');
+              }
+
+              // Share the log file using native share dialog
+              final result = await Share.shareXFiles([logFile],
+                  subject: 'Ditto Logs Export', text: 'Ditto application logs');
+
+              if (result.status == ShareResultStatus.success) {
+                _showSnackbar("Logs shared successfully!");
+              } else if (result.status == ShareResultStatus.dismissed) {
+                _showSnackbar("Sharing was cancelled");
+              } else if (result.status == ShareResultStatus.unavailable) {
+                _showSnackbar("Sharing is not available on this platform");
+              } else {
+                _showSnackbar("Sharing failed: ${result.status}");
+              }
+            } finally {
+              // Always clean up the temporary log file, regardless of sharing result
+              try {
+                await deleteTemporaryFile(tempLogPath);
+              } catch (e) {
+                _showSnackbar(
+                    "Failed to clean up temporary log file: ${e.toString()}");
+              }
+            }
+          } catch (e) {
+            _showSnackbar("Log export failed: ${e.toString()}");
+          }
         },
       );
 
@@ -61,10 +105,55 @@ class _DiskUsageViewState extends State<DiskUsageView> {
         label: const Text("Export Data Directory"),
         icon: const Icon(Icons.folder),
         onPressed: () async {
-          final path = await FilePicker.platform.getDirectoryPath();
-          if (path == null) return;
-          copyDir(widget.ditto.persistenceDirectory, path);
-          _showSnackbar("Data exported to $path");
+          try {
+            _showSnackbar(
+                "Creating database export... This may take a moment.");
+
+            // Create temporary ZIP file of database directory
+            String tempZipPath = '';
+
+            try {
+              tempZipPath = await createTempZipForSharing(
+                  widget.ditto.persistenceDirectory);
+
+              // Verify ZIP file exists and has content
+              final zipFile = XFile(tempZipPath);
+              final zipSize = await zipFile.length().catchError((_) => 0);
+              if (zipSize == 0) {
+                throw Exception('Database archive is empty');
+              }
+
+              // Share the ZIP file using native share dialog
+              final result = await Share.shareXFiles([zipFile],
+                  subject: 'Ditto Database Export',
+                  text:
+                      'Ditto database directory export (includes all data and lock files)');
+
+              if (result.status == ShareResultStatus.success) {
+                _showSnackbar("Database export shared successfully!");
+              } else if (result.status == ShareResultStatus.dismissed) {
+                _showSnackbar("Sharing was cancelled");
+              } else if (result.status == ShareResultStatus.unavailable) {
+                _showSnackbar("Sharing is not available on this platform");
+              } else {
+                _showSnackbar("Sharing failed: ${result.status}");
+              }
+            } catch (e) {
+              throw Exception(
+                  'Failed to create or share database export: ${e.toString()}');
+            } finally {
+              // Always clean up temporary ZIP file, regardless of sharing result
+              if (tempZipPath.isNotEmpty) {
+                try {
+                  await deleteTemporaryFile(tempZipPath);
+                } catch (e) {
+                  _showSnackbar("Failed to clean up temporary ZIP file: $e");
+                }
+              }
+            }
+          } catch (e) {
+            _showSnackbar("Database export failed: ${e.toString()}");
+          }
         },
       );
 
