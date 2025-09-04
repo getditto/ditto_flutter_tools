@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 class SystemSettingsView extends StatefulWidget {
   final Ditto ditto;
-  
+
   const SystemSettingsView({super.key, required this.ditto});
 
   @override
@@ -37,11 +37,10 @@ class _SystemSettingsViewState extends State<SystemSettingsView> {
       });
 
       final result = await widget.ditto.store.execute('SHOW ALL');
-      
+
       if (result.items.isNotEmpty) {
-        // The SHOW ALL command returns a single item with all settings as a Map
-        final settings = Map<String, dynamic>.from(result.items.first.value);
-        
+        final settings = result.items.first.value;
+
         setState(() {
           _settings = settings;
           _isLoading = false;
@@ -63,7 +62,7 @@ class _SystemSettingsViewState extends State<SystemSettingsView> {
   List<MapEntry<String, dynamic>> _getFilteredSettings() {
     final settings = _settings;
     if (settings == null) return [];
-    
+
     final entries = settings.entries.toList()
       ..sort((a, b) => a.key.compareTo(b.key));
 
