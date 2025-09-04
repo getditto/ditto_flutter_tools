@@ -1,6 +1,8 @@
 import 'package:ditto_live/ditto_live.dart';
 import 'package:flutter/material.dart';
 
+import 'query_result_exporter.dart';
+
 class QueryEditorView extends StatefulWidget {
   final Ditto ditto;
 
@@ -20,6 +22,7 @@ class _QueryEditorViewState extends State<QueryEditorView> {
   List<String> _allResults = [];
   List<String> _paginatedResults = [];
   String? _errorMessage;
+  dynamic _rawQueryResult;
 
   // Pagination state
   int _currentPage = 1;
@@ -102,6 +105,7 @@ class _QueryEditorViewState extends State<QueryEditorView> {
     setState(() {
       _isExecuting = true;
       _errorMessage = null;
+      _rawQueryResult = null;
       _allResults = [];
       _paginatedResults = [];
     });
@@ -121,6 +125,7 @@ class _QueryEditorViewState extends State<QueryEditorView> {
       // Update UI with results if still mounted
       if (mounted) {
         setState(() {
+          _rawQueryResult = result;
           _allResults = resultStrings;
           _currentPage = 1;
           _updatePaginatedResults();
@@ -132,6 +137,7 @@ class _QueryEditorViewState extends State<QueryEditorView> {
       if (mounted) {
         setState(() {
           _errorMessage = 'Error executing query: ${e.toString()}';
+          _rawQueryResult = null;
           _allResults = [];
           _paginatedResults = [];
           _currentPage = 1;
@@ -187,403 +193,370 @@ class _QueryEditorViewState extends State<QueryEditorView> {
     return resultStrings;
   }
 
+  bool _hasActualResults() {
+    return QueryResultExporter.hasActualResults(_rawQueryResult);
+  }
+
+  Future<void> _shareResults() async {
+    if (!_hasActualResults()) return;
+
+    try {
+      final result = await QueryResultExporter.shareResults(
+        _rawQueryResult,
+        onStatusUpdate: _showSnackbar,
+      );
+
+      final message = QueryResultExporter.getShareStatusMessage(result.status);
+      _showSnackbar(message);
+    } catch (e) {
+      _showSnackbar(e.toString());
+    }
+  }
+
+  void _showSnackbar(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
+  Widget get _queryInputSection => Container(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Enter DQL Statement:',
+              style: Theme.of(context).textTheme.labelLarge,
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _queryController,
+              maxLines: 3,
+              minLines: 2,
+              decoration: InputDecoration(
+                hintText: 'e.g., SELECT * FROM collection',
+                border: const OutlineInputBorder(),
+                filled: true,
+                fillColor: Theme.of(context).colorScheme.surface,
+              ),
+              style: const TextStyle(fontFamily: 'monospace'),
+              enabled: !_isExecuting,
+            ),
+          ],
+        ),
+      );
+
+  List<Widget> get _appBarActions => [
+        IconButton(
+          icon: const Icon(Icons.share),
+          tooltip: 'Share Results',
+          onPressed: _hasActualResults() ? _shareResults : null,
+        ),
+        Padding(
+          padding: const EdgeInsets.only(right: 8.0),
+          child: _isExecuting
+              ? const SizedBox(
+                  width: 48,
+                  height: 48,
+                  child: Center(
+                    child: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+                )
+              : IconButton(
+                  icon: const Icon(Icons.play_arrow),
+                  tooltip: 'Execute Query',
+                  onPressed: _executeQuery,
+                ),
+        ),
+      ];
+
+  Widget get _errorDisplay => Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.errorContainer,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.error_outline,
+              color: Theme.of(context).colorScheme.onErrorContainer,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                _errorMessage!,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onErrorContainer,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+
+  Widget get _loadingDisplay => const Center(
+        child: Column(
+          children: [
+            SizedBox(height: 32),
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Executing query...'),
+          ],
+        ),
+      );
+
+  Widget get _emptyResultsDisplay => Center(
+        child: Text(
+          'No results yet. Enter a query and press the play button.',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+          textAlign: TextAlign.center,
+        ),
+      );
+
+  Widget get _resultsHeader => Row(
+        children: [
+          Text(
+            'Results:',
+            style: Theme.of(context).textTheme.labelLarge,
+          ),
+          const SizedBox(width: 8),
+          if (_allResults.isNotEmpty) ...[
+            Text(
+              '${_allResults.length} total ${_allResults.length == 1 ? "item" : "items"}',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            if (_totalPages > 1) ...[
+              const SizedBox(width: 8),
+              Text(
+                '(showing ${_startIndex + 1}-$_endIndex)',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontStyle: FontStyle.italic,
+                    ),
+              ),
+            ],
+          ],
+        ],
+      );
+
+  Widget get _resultsList => Expanded(
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
+            ),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: ListView.separated(
+            padding: const EdgeInsets.all(12),
+            itemCount: _paginatedResults.length,
+            separatorBuilder: (context, index) => const Divider(),
+            itemBuilder: (context, index) {
+              final result = _paginatedResults[index];
+              final isHeader = result.contains('Mutated Documents:') ||
+                  result.contains('Transaction ID:');
+
+              return Padding(
+                padding: EdgeInsets.only(
+                  left: result.startsWith('  ') ? 16.0 : 0,
+                  top: 4,
+                  bottom: 4,
+                ),
+                child: SelectableText(
+                  result,
+                  style: TextStyle(
+                    fontFamily: 'monospace',
+                    fontSize: 14,
+                    fontWeight: isHeader ? FontWeight.bold : FontWeight.normal,
+                    color: isHeader ? Theme.of(context).colorScheme.primary : null,
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      );
+
+  Widget get _paginationControls => Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
+          ),
+        ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isNarrow = constraints.maxWidth < 400;
+
+            if (isNarrow) {
+              return _mobileLayout;
+            } else {
+              return _desktopLayout;
+            }
+          },
+        ),
+      );
+
+  Widget get _mobileLayout => Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(
+                onPressed: _currentPage > 1 ? _previousPage : null,
+                icon: const Icon(Icons.chevron_left),
+                tooltip: 'Previous page',
+              ),
+              SizedBox(
+                width: 50,
+                child: TextField(
+                  controller: _pageController,
+                  textAlign: TextAlign.center,
+                  keyboardType: TextInputType.number,
+                  style: Theme.of(context).textTheme.bodySmall,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                    isDense: true,
+                  ),
+                  onSubmitted: _handlePageInput,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text('of $_totalPages', style: Theme.of(context).textTheme.bodySmall),
+              const SizedBox(width: 8),
+              IconButton(
+                onPressed: _currentPage < _totalPages ? _nextPage : null,
+                icon: const Icon(Icons.chevron_right),
+                tooltip: 'Next page',
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Show:', style: Theme.of(context).textTheme.bodySmall),
+              const SizedBox(width: 8),
+              DropdownButton<int>(
+                value: _itemsPerPage,
+                style: Theme.of(context).textTheme.bodySmall,
+                underline: Container(
+                  height: 1,
+                  color: Theme.of(context).colorScheme.outline,
+                ),
+                items: const [
+                  DropdownMenuItem(value: 10, child: Text('10')),
+                  DropdownMenuItem(value: 25, child: Text('25')),
+                  DropdownMenuItem(value: 50, child: Text('50')),
+                  DropdownMenuItem(value: 100, child: Text('100')),
+                ],
+                onChanged: (value) {
+                  if (value != null) _changeItemsPerPage(value);
+                },
+              ),
+              const SizedBox(width: 8),
+              Text('per page', style: Theme.of(context).textTheme.bodySmall),
+            ],
+          ),
+        ],
+      );
+
+  Widget get _desktopLayout => Row(
+        children: [
+          IconButton(
+            onPressed: _currentPage > 1 ? _previousPage : null,
+            icon: const Icon(Icons.chevron_left),
+            tooltip: 'Previous page',
+          ),
+          SizedBox(
+            width: 60,
+            child: TextField(
+              controller: _pageController,
+              textAlign: TextAlign.center,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                isDense: true,
+              ),
+              onSubmitted: _handlePageInput,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text('of $_totalPages', style: Theme.of(context).textTheme.bodyMedium),
+          IconButton(
+            onPressed: _currentPage < _totalPages ? _nextPage : null,
+            icon: const Icon(Icons.chevron_right),
+            tooltip: 'Next page',
+          ),
+          const Spacer(),
+          Text('Show:', style: Theme.of(context).textTheme.bodyMedium),
+          const SizedBox(width: 8),
+          DropdownButton<int>(
+            value: _itemsPerPage,
+            items: const [
+              DropdownMenuItem(value: 10, child: Text('10')),
+              DropdownMenuItem(value: 25, child: Text('25')),
+              DropdownMenuItem(value: 50, child: Text('50')),
+              DropdownMenuItem(value: 100, child: Text('100')),
+            ],
+            onChanged: (value) {
+              if (value != null) _changeItemsPerPage(value);
+            },
+          ),
+          const SizedBox(width: 4),
+          Text('per page', style: Theme.of(context).textTheme.bodyMedium),
+        ],
+      );
+
+  Widget get _resultsSection => Expanded(
+        child: Container(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _resultsHeader,
+              const SizedBox(height: 8),
+              if (_errorMessage != null)
+                _errorDisplay
+              else if (_isExecuting)
+                _loadingDisplay
+              else if (_allResults.isEmpty)
+                _emptyResultsDisplay
+              else
+                _resultsList,
+              if (_totalPages > 1) ...[
+                const SizedBox(height: 16),
+                _paginationControls,
+              ],
+            ],
+          ),
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Query Editor'),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: _isExecuting
-                ? const SizedBox(
-                    width: 48,
-                    height: 48,
-                    child: Center(
-                      child: SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    ),
-                  )
-                : IconButton(
-                    icon: const Icon(Icons.play_arrow),
-                    tooltip: 'Execute Query',
-                    onPressed: _executeQuery,
-                  ),
-          ),
-        ],
+        actions: _appBarActions,
       ),
       body: Column(
         children: [
-          // Query Input Section
-          Container(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Enter DQL Statement:',
-                  style: Theme.of(context).textTheme.labelLarge,
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: _queryController,
-                  maxLines: 3,
-                  minLines: 2,
-                  decoration: InputDecoration(
-                    hintText: 'e.g., SELECT * FROM collection',
-                    border: const OutlineInputBorder(),
-                    filled: true,
-                    fillColor: Theme.of(context).colorScheme.surface,
-                  ),
-                  style: const TextStyle(fontFamily: 'monospace'),
-                  enabled: !_isExecuting,
-                ),
-              ],
-            ),
-          ),
-
+          _queryInputSection,
           const Divider(),
-
-          // Results Section
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        'Results:',
-                        style: Theme.of(context).textTheme.labelLarge,
-                      ),
-                      const SizedBox(width: 8),
-                      if (_allResults.isNotEmpty) ...[
-                        Text(
-                          '${_allResults.length} total ${_allResults.length == 1 ? "item" : "items"}',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                        if (_totalPages > 1) ...[
-                          const SizedBox(width: 8),
-                          Text(
-                            '(showing ${_startIndex + 1}-$_endIndex)',
-                            style:
-                                Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      fontStyle: FontStyle.italic,
-                                    ),
-                          ),
-                        ],
-                      ],
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-
-                  // Error Message
-                  if (_errorMessage != null)
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.errorContainer,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.error_outline,
-                            color:
-                                Theme.of(context).colorScheme.onErrorContainer,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              _errorMessage!,
-                              style: TextStyle(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onErrorContainer,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  else if (_isExecuting)
-                    const Center(
-                      child: Column(
-                        children: [
-                          SizedBox(height: 32),
-                          CircularProgressIndicator(),
-                          SizedBox(height: 16),
-                          Text('Executing query...'),
-                        ],
-                      ),
-                    )
-                  else if (_allResults.isEmpty)
-                    Center(
-                      child: Text(
-                        'No results yet. Enter a query and press the play button.',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
-                            ),
-                        textAlign: TextAlign.center,
-                      ),
-                    )
-                  else
-                    // Results List
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .outline
-                                .withValues(alpha: 0.3),
-                          ),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: ListView.separated(
-                          padding: const EdgeInsets.all(12),
-                          itemCount: _paginatedResults.length,
-                          separatorBuilder: (context, index) => const Divider(),
-                          itemBuilder: (context, index) {
-                            final result = _paginatedResults[index];
-                            final isHeader =
-                                result.contains('Mutated Documents:') ||
-                                    result.contains('Transaction ID:');
-
-                            return Padding(
-                              padding: EdgeInsets.only(
-                                left: result.startsWith('  ') ? 16.0 : 0,
-                                top: 4,
-                                bottom: 4,
-                              ),
-                              child: SelectableText(
-                                result,
-                                style: TextStyle(
-                                  fontFamily: 'monospace',
-                                  fontSize: 14,
-                                  fontWeight: isHeader
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                  color: isHeader
-                                      ? Theme.of(context).colorScheme.primary
-                                      : null,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-
-                  // Pagination Controls
-                  if (_totalPages > 1) ...[
-                    const SizedBox(height: 16),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .outline
-                              .withValues(alpha: 0.3),
-                        ),
-                      ),
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          final isNarrow = constraints.maxWidth < 400;
-
-                          if (isNarrow) {
-                            // Mobile layout - stack controls vertically
-                            return Column(
-                              children: [
-                                // Top row: page navigation
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    IconButton(
-                                      onPressed: _currentPage > 1
-                                          ? _previousPage
-                                          : null,
-                                      icon: const Icon(Icons.chevron_left),
-                                      tooltip: 'Previous page',
-                                    ),
-                                    SizedBox(
-                                      width: 50,
-                                      child: TextField(
-                                        controller: _pageController,
-                                        textAlign: TextAlign.center,
-                                        keyboardType: TextInputType.number,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodySmall,
-                                        decoration: const InputDecoration(
-                                          border: OutlineInputBorder(),
-                                          contentPadding: EdgeInsets.symmetric(
-                                              horizontal: 4, vertical: 4),
-                                          isDense: true,
-                                        ),
-                                        onSubmitted: _handlePageInput,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      'of $_totalPages',
-                                      style:
-                                          Theme.of(context).textTheme.bodySmall,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    IconButton(
-                                      onPressed: _currentPage < _totalPages
-                                          ? _nextPage
-                                          : null,
-                                      icon: const Icon(Icons.chevron_right),
-                                      tooltip: 'Next page',
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                                // Bottom row: items per page
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      'Show:',
-                                      style:
-                                          Theme.of(context).textTheme.bodySmall,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    DropdownButton<int>(
-                                      value: _itemsPerPage,
-                                      style:
-                                          Theme.of(context).textTheme.bodySmall,
-                                      underline: Container(
-                                        height: 1,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .outline,
-                                      ),
-                                      items: const [
-                                        DropdownMenuItem(
-                                            value: 10, child: Text('10')),
-                                        DropdownMenuItem(
-                                            value: 25, child: Text('25')),
-                                        DropdownMenuItem(
-                                            value: 50, child: Text('50')),
-                                        DropdownMenuItem(
-                                            value: 100, child: Text('100')),
-                                      ],
-                                      onChanged: (value) {
-                                        if (value != null) {
-                                          _changeItemsPerPage(value);
-                                        }
-                                      },
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      'per page',
-                                      style:
-                                          Theme.of(context).textTheme.bodySmall,
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            );
-                          } else {
-                            // Desktop layout - single row
-                            return Row(
-                              children: [
-                                // Previous button
-                                IconButton(
-                                  onPressed:
-                                      _currentPage > 1 ? _previousPage : null,
-                                  icon: const Icon(Icons.chevron_left),
-                                  tooltip: 'Previous page',
-                                ),
-
-                                // Page input
-                                SizedBox(
-                                  width: 60,
-                                  child: TextField(
-                                    controller: _pageController,
-                                    textAlign: TextAlign.center,
-                                    keyboardType: TextInputType.number,
-                                    decoration: const InputDecoration(
-                                      border: OutlineInputBorder(),
-                                      contentPadding: EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 8),
-                                      isDense: true,
-                                    ),
-                                    onSubmitted: _handlePageInput,
-                                  ),
-                                ),
-
-                                const SizedBox(width: 8),
-                                Text(
-                                  'of $_totalPages',
-                                  style: Theme.of(context).textTheme.bodyMedium,
-                                ),
-
-                                // Next button
-                                IconButton(
-                                  onPressed: _currentPage < _totalPages
-                                      ? _nextPage
-                                      : null,
-                                  icon: const Icon(Icons.chevron_right),
-                                  tooltip: 'Next page',
-                                ),
-
-                                const Spacer(),
-
-                                // Items per page selector
-                                Text(
-                                  'Show:',
-                                  style: Theme.of(context).textTheme.bodyMedium,
-                                ),
-                                const SizedBox(width: 8),
-                                DropdownButton<int>(
-                                  value: _itemsPerPage,
-                                  items: const [
-                                    DropdownMenuItem(
-                                        value: 10, child: Text('10')),
-                                    DropdownMenuItem(
-                                        value: 25, child: Text('25')),
-                                    DropdownMenuItem(
-                                        value: 50, child: Text('50')),
-                                    DropdownMenuItem(
-                                        value: 100, child: Text('100')),
-                                  ],
-                                  onChanged: (value) {
-                                    if (value != null) {
-                                      _changeItemsPerPage(value);
-                                    }
-                                  },
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'per page',
-                                  style: Theme.of(context).textTheme.bodyMedium,
-                                ),
-                              ],
-                            );
-                          }
-                        },
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ),
+          _resultsSection,
         ],
       ),
     );
