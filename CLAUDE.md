@@ -49,6 +49,12 @@ Full Flutter application demonstrating package usage:
 - Shows peer connections and network topology
 - Uses embedded HTML/JS/CSS assets
 
+### PeerListView
+- Real-time monitoring of connected peers in mesh network
+- Displays local and remote peer information
+- Shows connection details and cloud connectivity status
+- Expandable interface with peer key and device name display
+
 ## Development Commands
 
 ### Flutter Commands
