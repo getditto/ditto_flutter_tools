@@ -9,58 +9,114 @@ Diagnostic and Debugging Tools for Ditto in Flutter
 > These tools require **Ditto SDK version 4.12.1 or higher**. Ensure your project uses a compatible Ditto version before integrating these diagnostic tools.
 > You can find the latest Ditto SDK information in the [Ditto Docs](https://docs.ditto.live/sdk/latest/install-guides/flutter).
 
-## `PermissionsHealthView`
+## `PeerListView`
 
-The `PermissionsHealthView` provides a real-time monitoring interface for network status, helping developers debug connectivity and peer-to-peer communication issues. This feature mimics the iOS and Android versions of the Ditto Tools.
+The `PeerListView` provides a real-time interface for monitoring connected peers in your Ditto mesh network. This tool helps developers debug peer-to-peer connectivity and understand the network topology by displaying both local and remote peers along with their connection details.
 
 ### Usage
 
-The `PermissionsHealthView` can be used as a standalone widget in your Flutter application:
+The `PeerListView` can be used as a standalone widget in your Flutter application:
 
 ```dart
 import 'package:ditto_flutter_tools/ditto_flutter_tools.dart';
 
 // In your widget build method
 Scaffold(
-  appBar: AppBar(title: Text('Permissions Health')),
-  body: PermissionsHealthView(),
+  appBar: AppBar(title: Text('Connected Peers')),
+  body: PeerListView(ditto: myDittoInstance),
 )
 ```
 
 ### Features
 
-The permissions health view monitors the following:
+The peer list view provides:
 
-1. **Bluetooth Permission** - Shows whether your app has been granted Bluetooth access
-2. **Bluetooth Status** - Shows if Bluetooth is enabled/disabled on the device
-3. **Wi-Fi Status** - Shows peer-to-peer WiFi capabilities (WiFi Direct/AWDL)
+1. **Local Peer Information** - Displays information about the current device including its peer key and cloud connectivity status
+2. **Remote Peers List** - Shows all currently connected remote peers in the mesh network
+3. **Connection Details** - Expandable tiles showing connection types and peer relationships
+4. **Real-time Updates** - Automatically updates as peers join and leave the network
+5. **Cloud Status Indicators** - Visual icons indicating which peers are connected to Ditto Cloud
 
-The implementation uses platform-specific detection to provide accurate status information:
-- **Real Devices**: Attempts to detect actual Bluetooth and WiFi service states
-- **Simulators/Emulators**: Shows "Not available on simulator" with appropriate messaging
-- **Unsupported Platforms**: Shows "Unknown - Check device settings" with settings access
+### Peer Information Displayed
+
+For each peer (local and remote), the view shows:
+- **Device Name** - The human-readable name of the device
+- **Peer Key** - The unique identifier for the peer in the mesh network
+- **Cloud Connectivity** - Icon indicating if the peer is connected to Ditto Cloud (cloud icon) or offline (cloud_off icon)
+- **Active Connections** - Expandable list showing connection details between peers, including connection types
+
+### Real-time Monitoring
+
+The `PeerListView` uses Ditto's presence observer to provide real-time updates:
+- Peers are automatically added when they join the network
+- Peers are removed when they disconnect
+- Connection status changes are reflected immediately
+- No manual refresh required
 
 ### Platform Support
-- ✅ **iOS**: Monitors Bluetooth permissions and detects simulator environments
-- ✅ **Android**: Monitors Bluetooth permissions and detects emulator environments  
-- ✅ **macOS**: Monitors Bluetooth permissions and detects simulator environments
-- ❌ **Web**: Not supported - displays a message indicating web platform limitations
+- ✅ **iOS**: Full support for peer discovery and connection monitoring
+- ✅ **Android**: Full support for peer discovery and connection monitoring  
+- ✅ **macOS**: Full support for peer discovery and connection monitoring
+- ✅ **Linux**: Full support for peer discovery and connection monitoring
+- ❌ **Web**: Limited support - peer-to-peer connections not available on web platform
 
-### Current Implementation Status
+## `DiskUsageView`
 
-**✅ Fully Working:**
-- Bluetooth permission checking (all platforms)
-- Simulator/emulator detection (iOS/Android)
-- Settings navigation (platform-specific)
-- Web platform detection and messaging
-### Dependencies
+The `DiskUsageView` provides a comprehensive interface for monitoring Ditto database disk usage and exporting data for debugging or backup purposes. This tool helps developers understand storage consumption and provides convenient export functionality for both database files and logs.
 
-The `PermissionsHealthView` uses the `permission_handler` package to check and request permissions. Make sure your app includes the necessary platform-specific configurations based on the Ditto documentation at:[https://docs.ditto.live/sdk/latest/install-guides/flutter#step-1%3A-add-the-ditto-dependency](https://docs.ditto.live/sdk/latest/install-guides/flutter#step-1%3A-add-the-ditto-dependency)
+### Usage
 
+The `DiskUsageView` can be used as a standalone widget in your Flutter application:
 
-> [!WARNING]  
->This feature uses the permissions_handler package to check and request permissions.  For the UI to fully function, you must follow the instructions in the [permissions_handler README](https://pub.dev/packages/permission_handler).  Scroll to the Setup section and follow the instructions for iOS which requires to modify the Podfile in your ios directory.  You will have to modify the post_install block to add in a flag to enable the Bluetooth permission so it can detect the Bluetooth status.  Failure to do so will result in the Bluetooth status not being detected.
->
+```dart
+import 'package:ditto_flutter_tools/ditto_flutter_tools.dart';
+
+// In your widget build method
+Scaffold(
+  appBar: AppBar(title: Text('Disk Usage')),
+  body: DiskUsageView(ditto: myDittoInstance),
+)
+```
+
+### Features
+
+The disk usage view provides:
+
+1. **Storage Metrics** - Displays the size of each file and directory within the Ditto persistence directory
+2. **Export Database** - Exports the entire Ditto database directory using the Share Dialog 
+3. **Export Logs** - Exports Ditto debug logs to a file for troubleshooting
+
+### Export Functionality
+
+Both export features now use the **native platform Share API** for a seamless user experience across all supported platforms.
+
+#### Export Database
+- **ZIP Archive Creation**: Creates a compressed ZIP file containing the entire Ditto database directory
+- **Includes All Files**: Now includes lock files (`__ditto_lock*`, `lock.mdb`) and system files that were previously excluded - addressing Android lock file issues
+- **Background Processing**: ZIP creation runs in a background isolate to prevent UI blocking during large database exports
+- **Native Sharing**: Uses the platform's native share dialog to let users choose where to save or send the database export
+- **Automatic Cleanup**: Temporary files are automatically cleaned up after sharing (success or cancellation)
+
+#### Export Logs
+- **Temporary File Creation**: Creates a timestamped log file (`ditto_log_[timestamp].txt`) to avoid conflicts on repeated exports
+- **Native Sharing**: Uses the platform's native share dialog for seamless export experience  
+- **Automatic Cleanup**: Temporary log files are cleaned up immediately after sharing
+
+### Share API Benefits
+- **Cross-Platform Consistency**: Same sharing experience on iOS, Android, macOS, and Linux
+- **Native Integration**: Users can share to any app (email, cloud storage, messaging, etc.)
+- **No Permission Management**: No need to handle file system permissions manually
+- **Robust Error Handling**: All errors are displayed to users via snackbar notifications
+
+### Permissions & Configuration
+
+> [!NOTE]
+> **Share API Advantage**: Since the export functionality now uses the native Share API, **no special file system permissions are required**. The Share API handles all permission management automatically.
+
+#### Current Requirements
+- **No additional permissions needed** for export functionality
+- The `share_plus` package handles all platform-specific sharing requirements automatically
+- Users can share to any compatible app (email, cloud storage, messaging, etc.) through the native platform dialogs
 
 ## `SyncStatusHelper` and `SyncStatusView`
 
@@ -169,67 +225,59 @@ In the second scenario, you can be quite confident that your data is still the m
 That said, the aim of this tool is to provide heuristics that you can combine with an understanding of your data model to get an accurate picture of the state of your device.
 If you have specific knowledge about your data model or update frequency, you can use that knowledge to get a clearer view of the data you have locally.
 
-## `DiskUsageView`
 
-The `DiskUsageView` provides a comprehensive interface for monitoring Ditto database disk usage and exporting data for debugging or backup purposes. This tool helps developers understand storage consumption and provides convenient export functionality for both database files and logs.
+## `PermissionsHealthView`
+
+The `PermissionsHealthView` provides a real-time monitoring interface for network status, helping developers debug connectivity and peer-to-peer communication issues. This feature mimics the iOS and Android versions of the Ditto Tools.
 
 ### Usage
 
-The `DiskUsageView` can be used as a standalone widget in your Flutter application:
+The `PermissionsHealthView` can be used as a standalone widget in your Flutter application:
 
 ```dart
 import 'package:ditto_flutter_tools/ditto_flutter_tools.dart';
 
 // In your widget build method
 Scaffold(
-  appBar: AppBar(title: Text('Disk Usage')),
-  body: DiskUsageView(ditto: myDittoInstance),
+  appBar: AppBar(title: Text('Permissions Health')),
+  body: PermissionsHealthView(),
 )
 ```
 
 ### Features
 
-The disk usage view provides:
+The permissions health view monitors the following:
 
-1. **Storage Metrics** - Displays the size of each file and directory within the Ditto persistence directory
-2. **Export Database** - Exports the entire Ditto database directory using the Share Dialog 
-3. **Export Logs** - Exports Ditto debug logs to a file for troubleshooting
+1. **Bluetooth Permission** - Shows whether your app has been granted Bluetooth access
+2. **Bluetooth Status** - Shows if Bluetooth is enabled/disabled on the device
+3. **Wi-Fi Status** - Shows peer-to-peer WiFi capabilities (WiFi Direct/AWDL)
 
-### Export Functionality
+The implementation uses platform-specific detection to provide accurate status information:
+- **Real Devices**: Attempts to detect actual Bluetooth and WiFi service states
+- **Simulators/Emulators**: Shows "Not available on simulator" with appropriate messaging
+- **Unsupported Platforms**: Shows "Unknown - Check device settings" with settings access
 
-Both export features now use the **native platform Share API** for a seamless user experience across all supported platforms.
+### Platform Support
+- ✅ **iOS**: Monitors Bluetooth permissions and detects simulator environments
+- ✅ **Android**: Monitors Bluetooth permissions and detects emulator environments  
+- ✅ **macOS**: Monitors Bluetooth permissions and detects simulator environments
+- ❌ **Web**: Not supported - displays a message indicating web platform limitations
 
-#### Export Database
-- **ZIP Archive Creation**: Creates a compressed ZIP file containing the entire Ditto database directory
-- **Includes All Files**: Now includes lock files (`__ditto_lock*`, `lock.mdb`) and system files that were previously excluded - addressing Android lock file issues
-- **Background Processing**: ZIP creation runs in a background isolate to prevent UI blocking during large database exports
-- **Native Sharing**: Uses the platform's native share dialog to let users choose where to save or send the database export
-- **Automatic Cleanup**: Temporary files are automatically cleaned up after sharing (success or cancellation)
+### Current Implementation Status
 
-#### Export Logs
-- **Temporary File Creation**: Creates a timestamped log file (`ditto_log_[timestamp].txt`) to avoid conflicts on repeated exports
-- **Native Sharing**: Uses the platform's native share dialog for seamless export experience  
-- **Automatic Cleanup**: Temporary log files are cleaned up immediately after sharing
-
-### Share API Benefits
-- **Cross-Platform Consistency**: Same sharing experience on iOS, Android, macOS, and Linux
-- **Native Integration**: Users can share to any app (email, cloud storage, messaging, etc.)
-- **No Permission Management**: No need to handle file system permissions manually
-- **Robust Error Handling**: All errors are displayed to users via snackbar notifications
-
-### Permissions & Configuration
-
-> [!NOTE]
-> **Share API Advantage**: Since the export functionality now uses the native Share API, **no special file system permissions are required**. The Share API handles all permission management automatically.
-
-#### Current Requirements
-- **No additional permissions needed** for export functionality
-- The `share_plus` package handles all platform-specific sharing requirements automatically
-- Users can share to any compatible app (email, cloud storage, messaging, etc.) through the native platform dialogs
-
+**✅ Fully Working:**
+- Bluetooth permission checking (all platforms)
+- Simulator/emulator detection (iOS/Android)
+- Settings navigation (platform-specific)
+- Web platform detection and messaging
 ### Dependencies
 
-The `DiskUsageView` requires:
+The `PermissionsHealthView` uses the `permission_handler` package to check and request permissions. Make sure your app includes the necessary platform-specific configurations based on the Ditto documentation at:[https://docs.ditto.live/sdk/latest/install-guides/flutter#step-1%3A-add-the-ditto-dependency](https://docs.ditto.live/sdk/latest/install-guides/flutter#step-1%3A-add-the-ditto-dependency)
+
+
+> [!WARNING]  
+>This feature uses the permissions_handler package to check and request permissions.  For the UI to fully function, you must follow the instructions in the [permissions_handler README](https://pub.dev/packages/permission_handler).  Scroll to the Setup section and follow the instructions for iOS which requires to modify the Podfile in your ios directory.  You will have to modify the post_install block to add in a flag to enable the Bluetooth permission so it can detect the Bluetooth status.  Failure to do so will result in the Bluetooth status not being detected.
+>
 
 ### Integration Tests
 
