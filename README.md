@@ -53,12 +53,6 @@ The `PeerListView` uses Ditto's presence observer to provide real-time updates:
 - Connection status changes are reflected immediately
 - No manual refresh required
 
-### Platform Support
-- ✅ **iOS**: Full support for peer discovery and connection monitoring
-- ✅ **Android**: Full support for peer discovery and connection monitoring  
-- ✅ **macOS**: Full support for peer discovery and connection monitoring
-- ✅ **Linux**: Full support for peer discovery and connection monitoring
-- ❌ **Web**: Limited support - peer-to-peer connections not available on web platform
 
 ## `DiskUsageView`
 
