@@ -36,6 +36,12 @@
 	</array>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Uses WiFi to connect and sync with nearby devices</string>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+	<key>UISupportsDocumentBrowser</key>
+	<true/>
+	<key>UIFileSharingEnabled</key>
+	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

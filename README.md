@@ -2,11 +2,16 @@
 
 Diagnostic and Debugging Tools for Ditto in Flutter
 
-For support, please contact Ditto Support (<support@ditto.live>).
+> **⚠️ Platform Compatibility Notice**  
+> These tools currently do not support the **Flutter Web platform**. They are designed for mobile (iOS, Android) and desktop (macOS, Linux) platforms where Ditto's peer-to-peer functionality and file system access are available.
+
+> **📋 SDK Requirements**  
+> These tools require **Ditto SDK version 4.12.1 or higher**. Ensure your project uses a compatible Ditto version before integrating these diagnostic tools.
+> You can find the latest Ditto SDK information in the [Ditto Docs](https://docs.ditto.live/sdk/latest/install-guides/flutter).
 
 ## `PermissionsHealthView`
 
-The `PermissionsHealthView` provides a real-time monitoring interface for Ditto-related permissions, helping developers debug connectivity and peer-to-peer communication issues. This feature mimics the iOS and Android versions of the Ditto Tools.
+The `PermissionsHealthView` provides a real-time monitoring interface for network status, helping developers debug connectivity and peer-to-peer communication issues. This feature mimics the iOS and Android versions of the Ditto Tools.
 
 ### Usage
 
@@ -36,7 +41,6 @@ The implementation uses platform-specific detection to provide accurate status i
 - **Unsupported Platforms**: Shows "Unknown - Check device settings" with settings access
 
 ### Platform Support
-
 - ✅ **iOS**: Monitors Bluetooth permissions and detects simulator environments
 - ✅ **Android**: Monitors Bluetooth permissions and detects emulator environments  
 - ✅ **macOS**: Monitors Bluetooth permissions and detects simulator environments
@@ -49,24 +53,6 @@ The implementation uses platform-specific detection to provide accurate status i
 - Simulator/emulator detection (iOS/Android)
 - Settings navigation (platform-specific)
 - Web platform detection and messaging
-
-**⚠️ Partial Implementation:**
-- Bluetooth service status (shows "Unknown" - requires native method channels for full accuracy)
-- WiFi service status (shows "Unknown" - requires native method channels for full accuracy)
-
-**🚀 Future Enhancement:**
-To achieve full parity with iOS and Android native implementations, method channels would need to be added to:
-- Check actual Bluetooth adapter state (enabled/disabled/unsupported)
-- Check WiFi Direct/AWDL availability and state
-- Provide real-time status updates
-
-### Interactive Actions
-
-When permissions are not granted or services are disabled, the view provides action buttons:
-- **Grant Permission** - Opens permission request dialog or app settings
-- **Enable Bluetooth** - Opens system Bluetooth settings
-- **Enable Wi-Fi** - Opens system WiFi settings
-
 ### Dependencies
 
 The `PermissionsHealthView` uses the `permission_handler` package to check and request permissions. Make sure your app includes the necessary platform-specific configurations based on the Ditto documentation at:[https://docs.ditto.live/sdk/latest/install-guides/flutter#step-1%3A-add-the-ditto-dependency](https://docs.ditto.live/sdk/latest/install-guides/flutter#step-1%3A-add-the-ditto-dependency)
@@ -183,7 +169,67 @@ In the second scenario, you can be quite confident that your data is still the m
 That said, the aim of this tool is to provide heuristics that you can combine with an understanding of your data model to get an accurate picture of the state of your device.
 If you have specific knowledge about your data model or update frequency, you can use that knowledge to get a clearer view of the data you have locally.
 
-## Testing
+## `DiskUsageView`
+
+The `DiskUsageView` provides a comprehensive interface for monitoring Ditto database disk usage and exporting data for debugging or backup purposes. This tool helps developers understand storage consumption and provides convenient export functionality for both database files and logs.
+
+### Usage
+
+The `DiskUsageView` can be used as a standalone widget in your Flutter application:
+
+```dart
+import 'package:ditto_flutter_tools/ditto_flutter_tools.dart';
+
+// In your widget build method
+Scaffold(
+  appBar: AppBar(title: Text('Disk Usage')),
+  body: DiskUsageView(ditto: myDittoInstance),
+)
+```
+
+### Features
+
+The disk usage view provides:
+
+1. **Storage Metrics** - Displays the size of each file and directory within the Ditto persistence directory
+2. **Export Database** - Exports the entire Ditto database directory using the Share Dialog 
+3. **Export Logs** - Exports Ditto debug logs to a file for troubleshooting
+
+### Export Functionality
+
+Both export features now use the **native platform Share API** for a seamless user experience across all supported platforms.
+
+#### Export Database
+- **ZIP Archive Creation**: Creates a compressed ZIP file containing the entire Ditto database directory
+- **Includes All Files**: Now includes lock files (`__ditto_lock*`, `lock.mdb`) and system files that were previously excluded - addressing Android lock file issues
+- **Background Processing**: ZIP creation runs in a background isolate to prevent UI blocking during large database exports
+- **Native Sharing**: Uses the platform's native share dialog to let users choose where to save or send the database export
+- **Automatic Cleanup**: Temporary files are automatically cleaned up after sharing (success or cancellation)
+
+#### Export Logs
+- **Temporary File Creation**: Creates a timestamped log file (`ditto_log_[timestamp].txt`) to avoid conflicts on repeated exports
+- **Native Sharing**: Uses the platform's native share dialog for seamless export experience  
+- **Automatic Cleanup**: Temporary log files are cleaned up immediately after sharing
+
+### Share API Benefits
+- **Cross-Platform Consistency**: Same sharing experience on iOS, Android, macOS, and Linux
+- **Native Integration**: Users can share to any app (email, cloud storage, messaging, etc.)
+- **No Permission Management**: No need to handle file system permissions manually
+- **Robust Error Handling**: All errors are displayed to users via snackbar notifications
+
+### Permissions & Configuration
+
+> [!NOTE]
+> **Share API Advantage**: Since the export functionality now uses the native Share API, **no special file system permissions are required**. The Share API handles all permission management automatically.
+
+#### Current Requirements
+- **No additional permissions needed** for export functionality
+- The `share_plus` package handles all platform-specific sharing requirements automatically
+- Users can share to any compatible app (email, cloud storage, messaging, etc.) through the native platform dialogs
+
+### Dependencies
+
+The `DiskUsageView` requires:
 
 ### Integration Tests
 
@@ -271,3 +317,25 @@ If integration tests can't run in your environment, manually test:
 5. Tap "Permissions Health" again
 6. Verify no crash occurs (this was the original bug)
 7. Repeat steps 4-6 multiple times to stress test
+
+## Third-Party Dependencies
+
+This package uses the following third-party libraries:
+
+### Archive Package
+- **Package**: `archive` (^3.6.1)
+- **Purpose**: Provides ZIP compression functionality for creating database export archives, especially useful on Android where lock files can cause issues with direct file operations.
+- **License**: BSD-3-Clause
+- **Repository**: https://pub.dev/packages/archive
+- **Note**: Used specifically in disk usage export functionality to create ZIP archives containing all database files (including lock files) for sharing via the Share API.
+
+### Share Plus Package  
+- **Package**: `share_plus` (^10.1.1)
+- **Purpose**: Provides native platform sharing functionality through system share dialogs, replacing manual file picker implementations.
+- **License**: BSD-3-Clause
+- **Repository**: https://pub.dev/packages/share_plus
+- **Note**: Used for all export functionality (logs and database) to provide a consistent, native sharing experience across iOS, Android, macOS, and Linux platforms.
+
+## Support
+
+For support, please contact Ditto Support (<support@ditto.live>).
