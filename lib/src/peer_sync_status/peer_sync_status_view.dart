@@ -30,7 +30,7 @@ class _PeerSyncStatusViewState extends State<PeerSyncStatusView> {
   }
 
   @override
-  void initState() async{
+  void initState() {
     super.initState();
     _initializeObserver();
   }
