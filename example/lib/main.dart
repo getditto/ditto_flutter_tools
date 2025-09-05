@@ -6,7 +6,13 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:beamer/beamer.dart';
 
 import 'services/ditto_service.dart';
-import 'routing/app_beamer.dart';
+import 'widgets/main_list_view.dart';
+import 'screens/peers_list_screen.dart';
+import 'screens/sync_status_screen.dart';
+import 'screens/peer_sync_status_screen.dart';
+import 'screens/permissions_health_screen.dart';
+import 'screens/disk_usage_screen.dart';
+import 'screens/system_settings_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,7 +30,6 @@ class DittoApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const DittoExample();
   }
-
 }
 
 class DittoExample extends StatefulWidget {
@@ -97,9 +102,34 @@ class _DittoExampleState extends State<DittoExample> {
       // Only create subscription service after Ditto is fully initialized
       final subscriptionService = SubscriptionService(dittoService);
 
-      final beamerDelegate = AppBeamer.createDelegate(
-        dittoService: dittoService,
-        subscriptionService: subscriptionService,
+      final beamerDelegate = BeamerDelegate(
+        initialPath: '/',
+        locationBuilder: RoutesLocationBuilder(
+          routes: {
+            '/': (context, state, data) => MainListView(
+                  dittoService: dittoService,
+                  subscriptionService: subscriptionService,
+                ),
+            '/peers': (context, state, data) => PeersListScreen(
+                  ditto: dittoService.ditto,
+                ),
+            '/sync-status': (context, state, data) => SyncStatusScreen(
+                  ditto: dittoService.ditto,
+                  subscriptions: subscriptionService.subscriptions,
+                ),
+            '/peer-sync-status': (context, state, data) => PeerSyncStatusScreen(
+                  ditto: dittoService.ditto,
+                ),
+            '/permissions-health': (context, state, data) =>
+                const PermissionsHealthScreen(),
+            '/disk-usage': (context, state, data) => DiskUsageScreen(
+                  ditto: dittoService.ditto,
+                ),
+            '/system-settings': (context, state, data) => SystemSettingsScreen(
+                  ditto: dittoService.ditto,
+                ),
+          },
+        ),
       );
 
       setState(() {
@@ -204,4 +234,3 @@ class _DittoExampleState extends State<DittoExample> {
     );
   }
 }
-
