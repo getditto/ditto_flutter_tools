@@ -12,52 +12,24 @@ import '../screens/disk_usage_screen.dart';
 import '../screens/system_settings_screen.dart';
 import 'route_paths.dart';
 
-class HomeBeamLocation extends BeamLocation<BeamState> {
+class AppBeamLocation extends BeamLocation<BeamState> {
   final DittoService dittoService;
   final SubscriptionService subscriptionService;
 
-  HomeBeamLocation({
-    required this.dittoService,
-    required this.subscriptionService,
-  });
-
-  @override
-  List<String> get pathPatterns => [RoutePaths.home];
-
-  @override
-  List<BeamPage> buildPages(BuildContext context, BeamState state) {
-    return [
-      BeamPage(
-        key: const ValueKey('home'),
-        title: 'Ditto Tools',
-        child: MainListView(
-          dittoService: dittoService,
-          subscriptionService: subscriptionService,
-        ),
-      ),
-    ];
-  }
-}
-
-class NetworkBeamLocation extends BeamLocation<BeamState> {
-  final DittoService dittoService;
-  final SubscriptionService subscriptionService;
-
-  NetworkBeamLocation({
+  AppBeamLocation({
     required this.dittoService,
     required this.subscriptionService,
   });
 
   @override
   List<String> get pathPatterns => [
-    RoutePaths.peersList,
-    RoutePaths.syncStatus,
-    RoutePaths.peerSyncStatus,
+    '/*',  // Match all routes
   ];
 
   @override
   List<BeamPage> buildPages(BuildContext context, BeamState state) {
     final pages = <BeamPage>[
+      // Always include home page as the root
       BeamPage(
         key: const ValueKey('home'),
         title: 'Ditto Tools',
@@ -68,94 +40,80 @@ class NetworkBeamLocation extends BeamLocation<BeamState> {
       ),
     ];
 
-    if (state.uri.path == RoutePaths.peersList) {
-      pages.add(
-        BeamPage(
-          key: const ValueKey('peers'),
-          title: 'Peers List',
-          child: PeersListScreen(ditto: dittoService.ditto),
-          type: BeamPageType.slideRightTransition,
-        ),
-      );
-    } else if (state.uri.path == RoutePaths.syncStatus) {
-      pages.add(
-        BeamPage(
-          key: const ValueKey('sync-status'),
-          title: 'Sync Status',
-          child: SyncStatusScreen(
-            ditto: dittoService.ditto,
-            subscriptions: subscriptionService.subscriptions,
+    // Add additional pages based on current path
+    switch (state.uri.path) {
+      case RoutePaths.peersList:
+        pages.add(
+          BeamPage(
+            key: const ValueKey('peers'),
+            title: 'Peers List',
+            child: PeersListScreen(ditto: dittoService.ditto),
+            type: BeamPageType.slideRightTransition,
           ),
-          type: BeamPageType.slideRightTransition,
-        ),
-      );
-    } else if (state.uri.path == RoutePaths.peerSyncStatus) {
-      pages.add(
-        BeamPage(
-          key: const ValueKey('peer-sync-status'),
-          title: 'Peer Sync Status',
-          child: PeerSyncStatusScreen(ditto: dittoService.ditto),
-          type: BeamPageType.slideRightTransition,
-        ),
-      );
-    }
+        );
+        break;
 
-    return pages;
-  }
-}
+      case RoutePaths.syncStatus:
+        pages.add(
+          BeamPage(
+            key: const ValueKey('sync-status'),
+            title: 'Sync Status',
+            child: SyncStatusScreen(
+              ditto: dittoService.ditto,
+              subscriptions: subscriptionService.subscriptions,
+            ),
+            type: BeamPageType.slideRightTransition,
+          ),
+        );
+        break;
 
-class SystemBeamLocation extends BeamLocation<BeamState> {
-  final DittoService dittoService;
+      case RoutePaths.peerSyncStatus:
+        pages.add(
+          BeamPage(
+            key: const ValueKey('peer-sync-status'),
+            title: 'Peer Sync Status',
+            child: PeerSyncStatusScreen(ditto: dittoService.ditto),
+            type: BeamPageType.slideRightTransition,
+          ),
+        );
+        break;
 
-  SystemBeamLocation({required this.dittoService});
+      case RoutePaths.permissionsHealth:
+        pages.add(
+          const BeamPage(
+            key: ValueKey('permissions-health'),
+            title: 'Permissions Health',
+            child: PermissionsHealthScreen(),
+            type: BeamPageType.slideRightTransition,
+          ),
+        );
+        break;
 
-  @override
-  List<String> get pathPatterns => [
-    RoutePaths.permissionsHealth,
-    RoutePaths.diskUsage,
-    RoutePaths.systemSettings,
-  ];
+      case RoutePaths.diskUsage:
+        pages.add(
+          BeamPage(
+            key: const ValueKey('disk-usage'),
+            title: 'Disk Usage',
+            child: DiskUsageScreen(ditto: dittoService.ditto),
+            type: BeamPageType.slideRightTransition,
+          ),
+        );
+        break;
 
-  @override
-  List<BeamPage> buildPages(BuildContext context, BeamState state) {
-    final pages = <BeamPage>[
-      BeamPage(
-        key: const ValueKey('home'),
-        title: 'Ditto Tools',
-        child: MainListView(
-          dittoService: dittoService,
-          subscriptionService: SubscriptionService(dittoService),
-        ),
-      ),
-    ];
+      case RoutePaths.systemSettings:
+        pages.add(
+          BeamPage(
+            key: const ValueKey('system-settings'),
+            title: 'System Settings',
+            child: SystemSettingsScreen(ditto: dittoService.ditto),
+            type: BeamPageType.slideRightTransition,
+          ),
+        );
+        break;
 
-    if (state.uri.path == RoutePaths.permissionsHealth) {
-      pages.add(
-        const BeamPage(
-          key: ValueKey('permissions-health'),
-          title: 'Permissions Health',
-          child: PermissionsHealthScreen(),
-          type: BeamPageType.slideRightTransition,
-        ),
-      );
-    } else if (state.uri.path == RoutePaths.diskUsage) {
-      pages.add(
-        BeamPage(
-          key: const ValueKey('disk-usage'),
-          title: 'Disk Usage',
-          child: DiskUsageScreen(ditto: dittoService.ditto),
-          type: BeamPageType.slideRightTransition,
-        ),
-      );
-    } else if (state.uri.path == RoutePaths.systemSettings) {
-      pages.add(
-        BeamPage(
-          key: const ValueKey('system-settings'),
-          title: 'System Settings',
-          child: SystemSettingsScreen(ditto: dittoService.ditto),
-          type: BeamPageType.slideRightTransition,
-        ),
-      );
+      default:
+        // For home path or any unmatched path, no additional page needed
+        break;
     }
 
     return pages;

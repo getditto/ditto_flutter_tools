@@ -142,10 +142,6 @@ class _PeerSyncStatusViewState extends State<PeerSyncStatusView> {
 
   Widget _buildPeerCard(SyncStatus syncStatus, BuildContext context) {
     final theme = Theme.of(context);
-    final statusColor = syncStatus.isConnected
-        ? theme.colorScheme.primary
-        : theme.colorScheme.onSurfaceVariant;
-    final statusText = syncStatus.isConnected ? 'Connected' : 'Not Connected';
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -155,49 +151,7 @@ class _PeerSyncStatusViewState extends State<PeerSyncStatusView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        syncStatus.peerType,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        syncStatus.id,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.circle,
-                      size: 10,
-                      color: statusColor,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      statusText,
-                      style: TextStyle(
-                        color: statusColor,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+            _buildPeerCardHeader(syncStatus, theme),
             _buildSyncCommitInfo(syncStatus, theme),
             _buildLastUpdateInfo(syncStatus, theme),
           ],
@@ -277,6 +231,57 @@ class _PeerSyncStatusViewState extends State<PeerSyncStatusView> {
               ),
             ),
           ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPeerCardHeader(SyncStatus syncStatus, ThemeData theme) {
+    final statusColor = syncStatus.isConnected
+        ? theme.colorScheme.primary
+        : theme.colorScheme.onSurfaceVariant;
+    final statusText = syncStatus.isConnected ? 'Connected' : 'Not Connected';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              syncStatus.peerType,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.circle,
+                  size: 10,
+                  color: statusColor,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  statusText,
+                  style: TextStyle(
+                    color: statusColor,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          syncStatus.id,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
         ),
       ],
     );

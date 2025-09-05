@@ -13,23 +13,10 @@ class AppBeamer {
     return BeamerDelegate(
       initialPath: RoutePaths.home,
       locationBuilder: (routeInformation, _) {
-        final path = routeInformation.uri.path;
-        
-        if (path == RoutePaths.home || path.isEmpty || path == '/') {
-          return HomeBeamLocation(
-            dittoService: dittoService,
-            subscriptionService: subscriptionService,
-          );
-        } else if (path == RoutePaths.peersList ||
-            path == RoutePaths.syncStatus ||
-            path == RoutePaths.peerSyncStatus) {
-          return NetworkBeamLocation(
-            dittoService: dittoService,
-            subscriptionService: subscriptionService,
-          );
-        } else {
-          return SystemBeamLocation(dittoService: dittoService);
-        }
+        return AppBeamLocation(
+          dittoService: dittoService,
+          subscriptionService: subscriptionService,
+        );
       },
     );
   }
