@@ -6,12 +6,12 @@ class SubscriptionService {
   SubscriptionService(this._dittoProvider);
 
   late final _taskSub =
-      _dittoProvider.ditto!.sync.registerSubscription("SELECT * FROM tasks");
+      _dittoProvider.ditto.sync.registerSubscription("SELECT * FROM tasks");
   late final _moviesSub =
-      _dittoProvider.ditto!.sync.registerSubscription("SELECT * FROM movies");
+      _dittoProvider.ditto.sync.registerSubscription("SELECT * FROM movies");
   late final _commentsSub =
-      _dittoProvider.ditto!.sync.registerSubscription("SELECT * FROM comments");
+      _dittoProvider.ditto.sync.registerSubscription("SELECT * FROM comments");
 
   List<SyncSubscription> get subscriptions =>
-      _dittoProvider.ditto == null ? [] : [_taskSub, _moviesSub, _commentsSub];
+      [_taskSub, _moviesSub, _commentsSub];
 }
