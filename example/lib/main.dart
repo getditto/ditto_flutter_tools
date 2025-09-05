@@ -13,6 +13,7 @@ import 'screens/peer_sync_status_screen.dart';
 import 'screens/permissions_health_screen.dart';
 import 'screens/disk_usage_screen.dart';
 import 'screens/system_settings_screen.dart';
+import 'constants/routes.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -103,29 +104,29 @@ class _DittoExampleState extends State<DittoExample> {
       final subscriptionService = SubscriptionService(dittoService);
 
       final beamerDelegate = BeamerDelegate(
-        initialPath: '/',
+        initialPath: homeRoute,
         locationBuilder: RoutesLocationBuilder(
           routes: {
-            '/': (context, state, data) => MainListView(
+            homeRoute: (context, state, data) => MainListView(
                   dittoService: dittoService,
                   subscriptionService: subscriptionService,
                 ),
-            '/peers': (context, state, data) => PeersListScreen(
+            peersRoute: (context, state, data) => PeersListScreen(
                   ditto: dittoService.ditto,
                 ),
-            '/sync-status': (context, state, data) => SyncStatusScreen(
+            syncStatusRoute: (context, state, data) => SyncStatusScreen(
                   ditto: dittoService.ditto,
                   subscriptions: subscriptionService.subscriptions,
                 ),
-            '/peer-sync-status': (context, state, data) => PeerSyncStatusScreen(
+            peerSyncStatusRoute: (context, state, data) => PeerSyncStatusScreen(
                   ditto: dittoService.ditto,
                 ),
-            '/permissions-health': (context, state, data) =>
+            permissionsHealthRoute: (context, state, data) =>
                 const PermissionsHealthScreen(),
-            '/disk-usage': (context, state, data) => DiskUsageScreen(
+            diskUsageRoute: (context, state, data) => DiskUsageScreen(
                   ditto: dittoService.ditto,
                 ),
-            '/system-settings': (context, state, data) => SystemSettingsScreen(
+            systemSettingsRoute: (context, state, data) => SystemSettingsScreen(
                   ditto: dittoService.ditto,
                 ),
           },

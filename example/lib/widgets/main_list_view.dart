@@ -3,7 +3,7 @@ import 'package:beamer/beamer.dart';
 
 import '../services/ditto_service.dart';
 import '../services/subscription_service.dart';
-import '../routing/route_paths.dart';
+import '../constants/routes.dart';
 
 class MainListView extends StatelessWidget {
   final DittoService dittoService;
@@ -69,7 +69,7 @@ class MainListView extends StatelessWidget {
                   title: const Text("Peers List"),
                   trailing: Icon(Icons.chevron_right,
                       color: Theme.of(context).colorScheme.onSurfaceVariant),
-                  onTap: () => Beamer.of(context).beamToNamed(RoutePaths.peersList),
+                  onTap: () => Beamer.of(context).beamToNamed(peersRoute),
                 ),
                 const Divider(),
                 ListTile(
@@ -89,7 +89,7 @@ class MainListView extends StatelessWidget {
                   title: const Text("Sync Status"),
                   trailing: Icon(Icons.chevron_right,
                       color: Theme.of(context).colorScheme.onSurfaceVariant),
-                  onTap: () => Beamer.of(context).beamToNamed(RoutePaths.syncStatus),
+                  onTap: () => Beamer.of(context).beamToNamed(syncStatusRoute),
                 ),
                 const Divider(),
                 ListTile(
@@ -109,7 +109,8 @@ class MainListView extends StatelessWidget {
                   title: const Text("Peer Sync Status"),
                   trailing: Icon(Icons.chevron_right,
                       color: Theme.of(context).colorScheme.onSurfaceVariant),
-                  onTap: () => Beamer.of(context).beamToNamed(RoutePaths.peerSyncStatus),
+                  onTap: () =>
+                      Beamer.of(context).beamToNamed(peerSyncStatusRoute),
                 ),
               ],
             ),
@@ -160,7 +161,8 @@ class MainListView extends StatelessWidget {
                   title: const Text("Permissions Health"),
                   trailing: Icon(Icons.chevron_right,
                       color: Theme.of(context).colorScheme.onSurfaceVariant),
-                  onTap: () => Beamer.of(context).beamToNamed(RoutePaths.permissionsHealth),
+                  onTap: () =>
+                      Beamer.of(context).beamToNamed(permissionsHealthRoute),
                 ),
                 const Divider(),
                 ListTile(
@@ -180,7 +182,7 @@ class MainListView extends StatelessWidget {
                   title: const Text("Disk Usage"),
                   trailing: Icon(Icons.chevron_right,
                       color: Theme.of(context).colorScheme.onSurfaceVariant),
-                  onTap: () => Beamer.of(context).beamToNamed(RoutePaths.diskUsage),
+                  onTap: () => Beamer.of(context).beamToNamed(diskUsageRoute),
                 ),
                 const Divider(),
                 ListTile(
@@ -200,7 +202,8 @@ class MainListView extends StatelessWidget {
                   title: const Text("System Settings"),
                   trailing: Icon(Icons.chevron_right,
                       color: Theme.of(context).colorScheme.onSurfaceVariant),
-                  onTap: () => Beamer.of(context).beamToNamed(RoutePaths.systemSettings),
+                  onTap: () =>
+                      Beamer.of(context).beamToNamed(systemSettingsRoute),
                 ),
               ],
             ),
