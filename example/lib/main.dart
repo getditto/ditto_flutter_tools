@@ -313,9 +313,51 @@ class _MainListView extends StatelessWidget {
                           child: Scaffold(
                             appBar: AppBar(title: const Text("Sync Status")),
                             body: SyncStatusView(
-                              ditto: dittoService.ditto!,
+                              ditto: dittoService.ditto,
                               subscriptions: subscriptionService.subscriptions,
                             ),
+                          ),
+                        ),
+                        transitionsBuilder:
+                            (context, animation, secondaryAnimation, child) {
+                          return SlideTransition(
+                            position: Tween<Offset>(
+                              begin: const Offset(1.0, 0.0),
+                              end: Offset.zero,
+                            ).animate(animation),
+                            child: child,
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
+                const Divider(),
+                ListTile(
+                  leading: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: Colors.orange,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.cloud_sync,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                  title: const Text("Peer Sync Status"),
+                  trailing: Icon(Icons.chevron_right,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            Material(
+                          child: Scaffold(
+                            appBar: AppBar(title: const Text("Peer Sync Status")),
+                            body: PeerSyncStatusView(ditto: dittoService.ditto),
                           ),
                         ),
                         transitionsBuilder:
