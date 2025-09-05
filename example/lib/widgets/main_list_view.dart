@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:beamer/beamer.dart';
 
 import '../services/ditto_service.dart';
 import '../services/subscription_service.dart';
@@ -69,7 +69,7 @@ class MainListView extends StatelessWidget {
                   title: const Text("Peers List"),
                   trailing: Icon(Icons.chevron_right,
                       color: Theme.of(context).colorScheme.onSurfaceVariant),
-                  onTap: () => context.push(RoutePaths.peersList),
+                  onTap: () => Beamer.of(context).beamToNamed(RoutePaths.peersList),
                 ),
                 const Divider(),
                 ListTile(
@@ -89,7 +89,7 @@ class MainListView extends StatelessWidget {
                   title: const Text("Sync Status"),
                   trailing: Icon(Icons.chevron_right,
                       color: Theme.of(context).colorScheme.onSurfaceVariant),
-                  onTap: () => context.push(RoutePaths.syncStatus),
+                  onTap: () => Beamer.of(context).beamToNamed(RoutePaths.syncStatus),
                 ),
                 const Divider(),
                 ListTile(
@@ -109,7 +109,7 @@ class MainListView extends StatelessWidget {
                   title: const Text("Peer Sync Status"),
                   trailing: Icon(Icons.chevron_right,
                       color: Theme.of(context).colorScheme.onSurfaceVariant),
-                  onTap: () => context.push(RoutePaths.peerSyncStatus),
+                  onTap: () => Beamer.of(context).beamToNamed(RoutePaths.peerSyncStatus),
                 ),
               ],
             ),
@@ -160,7 +160,7 @@ class MainListView extends StatelessWidget {
                   title: const Text("Permissions Health"),
                   trailing: Icon(Icons.chevron_right,
                       color: Theme.of(context).colorScheme.onSurfaceVariant),
-                  onTap: () => context.push(RoutePaths.permissionsHealth),
+                  onTap: () => Beamer.of(context).beamToNamed(RoutePaths.permissionsHealth),
                 ),
                 const Divider(),
                 ListTile(
@@ -180,7 +180,7 @@ class MainListView extends StatelessWidget {
                   title: const Text("Disk Usage"),
                   trailing: Icon(Icons.chevron_right,
                       color: Theme.of(context).colorScheme.onSurfaceVariant),
-                  onTap: () => context.push(RoutePaths.diskUsage),
+                  onTap: () => Beamer.of(context).beamToNamed(RoutePaths.diskUsage),
                 ),
                 const Divider(),
                 ListTile(
@@ -200,7 +200,7 @@ class MainListView extends StatelessWidget {
                   title: const Text("System Settings"),
                   trailing: Icon(Icons.chevron_right,
                       color: Theme.of(context).colorScheme.onSurfaceVariant),
-                  onTap: () => context.push(RoutePaths.systemSettings),
+                  onTap: () => Beamer.of(context).beamToNamed(RoutePaths.systemSettings),
                 ),
               ],
             ),

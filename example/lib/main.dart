@@ -3,10 +3,10 @@
 import 'package:example/services/subscription_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:go_router/go_router.dart';
+import 'package:beamer/beamer.dart';
 
 import 'services/ditto_service.dart';
-import 'routing/app_router.dart';
+import 'routing/app_beamer.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,7 +44,7 @@ class _DittoExampleState extends State<DittoExample> {
       (throw Exception("DITTO_AUTH_URL not found in .env file"));
   final websocketUrl = dotenv.env['DITTO_WEBSOCKET_URL'] ??
       (throw Exception("DITTO_WEBSOCKET_URL not found in .env file"));
-  GoRouter? _router;
+  BeamerDelegate? _beamerDelegate;
   bool _isInitializing = true;
   String? _errorMessage;
 
@@ -97,13 +97,13 @@ class _DittoExampleState extends State<DittoExample> {
       // Only create subscription service after Ditto is fully initialized
       final subscriptionService = SubscriptionService(dittoService);
 
-      final router = AppRouter.createRouter(
+      final beamerDelegate = AppBeamer.createDelegate(
         dittoService: dittoService,
         subscriptionService: subscriptionService,
       );
 
       setState(() {
-        _router = router;
+        _beamerDelegate = beamerDelegate;
         _isInitializing = false;
         _errorMessage = null;
       });
@@ -122,8 +122,8 @@ class _DittoExampleState extends State<DittoExample> {
       return _loading;
     }
 
-    final router = _router;
-    if (router == null) {
+    final beamerDelegate = _beamerDelegate;
+    if (beamerDelegate == null) {
       return _buildError(_errorMessage);
     }
 
@@ -133,7 +133,8 @@ class _DittoExampleState extends State<DittoExample> {
       theme: _lightTheme,
       darkTheme: _darkTheme,
       themeMode: ThemeMode.system,
-      routerConfig: router,
+      routerDelegate: beamerDelegate,
+      routeInformationParser: BeamerParser(),
     );
   }
 
