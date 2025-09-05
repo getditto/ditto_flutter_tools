@@ -16,11 +16,11 @@ class PeerSyncStatusView extends StatefulWidget {
 }
 
 class _PeerSyncStatusViewState extends State<PeerSyncStatusView> {
+  final query = "SELECT * FROM COLLECTION system:data_sync_info (documents MAP) ORDER BY sync_session_status, last_update_received_time DESC";
   final _syncStatusStreamController = StreamController<QueryResult>.broadcast();
   StoreObserver? _syncStatusObserver;
   QueryResult? _latestSyncStatusResult;
   StreamSubscription? _observerSubscription;
-  bool _isStrictMode = false;
 
   Stream<QueryResult> get _syncStatusStream async* {
     if (_latestSyncStatusResult != null) {
@@ -30,44 +30,17 @@ class _PeerSyncStatusViewState extends State<PeerSyncStatusView> {
   }
 
   @override
-  void initState() {
+  void initState() async{
     super.initState();
     _initializeObserver();
   }
 
   Future<void> _initializeObserver() async {
-    // Check DQL strict mode first
-    await _checkDqlStrictMode();
     _registerObserver();
   }
 
-  Future<void> _checkDqlStrictMode() async {
-    try {
-      final result = await widget.ditto.store.execute("SHOW DQL_STRICT_MODE");
-      if (result.items.isNotEmpty) {
-        final item = result.items.first;
-        final strictModeValue = item.value["dql_strict_mode"];
-
-        // Cast to bool and validate
-        if (strictModeValue is bool) {
-          _isStrictMode = strictModeValue;
-        } else {
-          _isStrictMode = true;
-        }
-      }
-    } catch (e) {
-      // If the query fails, assume non-strict mode (default)
-      _isStrictMode = false;
-    }
-  }
-
   void _registerObserver() {
-    final query = _isStrictMode
-        ? "SELECT * FROM COLLECTION system:data_sync_info (documents MAP) ORDER BY sync_session_status, last_update_received_time DESC"
-        : "SELECT * FROM system:data_sync_info ORDER BY sync_session_status, last_update_received_time DESC";
-
     _syncStatusObserver = widget.ditto.store.registerObserver(query);
-
     _observerSubscription = _syncStatusObserver!.changes.listen((result) {
       // Only process if the widget is still mounted and stream is not closed
       if (mounted && !_syncStatusStreamController.isClosed) {
@@ -169,6 +142,10 @@ class _PeerSyncStatusViewState extends State<PeerSyncStatusView> {
 
   Widget _buildPeerCard(SyncStatus syncStatus, BuildContext context) {
     final theme = Theme.of(context);
+    final statusColor = syncStatus.isConnected
+        ? theme.colorScheme.primary
+        : theme.colorScheme.onSurfaceVariant;
+    final statusText = syncStatus.isConnected ? 'Connected' : 'Not Connected';
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -207,17 +184,13 @@ class _PeerSyncStatusViewState extends State<PeerSyncStatusView> {
                     Icon(
                       Icons.circle,
                       size: 10,
-                      color: syncStatus.isConnected
-                          ? theme.colorScheme.primary
-                          : theme.colorScheme.onSurfaceVariant,
+                      color: statusColor,
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      syncStatus.isConnected ? 'Connected' : 'Not Connected',
+                      statusText,
                       style: TextStyle(
-                        color: syncStatus.isConnected
-                            ? theme.colorScheme.primary
-                            : theme.colorScheme.onSurfaceVariant,
+                        color: statusColor,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -225,44 +198,8 @@ class _PeerSyncStatusViewState extends State<PeerSyncStatusView> {
                 ),
               ],
             ),
-            if (syncStatus.hasSyncedCommit) ...[
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Icon(
-                    Icons.check_circle,
-                    size: 16,
-                    color: theme.colorScheme.primary,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Synced to local database commit: ${syncStatus.syncedUpToLocalCommitId}',
-                      style: theme.textTheme.bodySmall,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-            if (syncStatus.hasLastUpdateTime) ...[
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(
-                    Icons.access_time,
-                    size: 16,
-                    color: theme.colorScheme.secondary,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Last update: ${_formatTimestamp(syncStatus.lastUpdateReceivedTime!)}',
-                      style: theme.textTheme.bodySmall,
-                    ),
-                  ),
-                ],
-              ),
-            ],
+            _buildSyncCommitInfo(syncStatus, theme),
+            _buildLastUpdateInfo(syncStatus, theme),
           ],
         ),
       ),
@@ -287,5 +224,61 @@ class _PeerSyncStatusViewState extends State<PeerSyncStatusView> {
   String _formatLastUpdate(int? timestamp) {
     if (timestamp == null) return 'Unknown';
     return _formatTimestamp(timestamp);
+  }
+
+  Widget _buildSyncCommitInfo(SyncStatus syncStatus, ThemeData theme) {
+    if (!syncStatus.hasSyncedCommit) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      children: [
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Icon(
+              Icons.check_circle,
+              size: 16,
+              color: theme.colorScheme.primary,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Synced to local database commit: ${syncStatus.syncedUpToLocalCommitId}',
+                style: theme.textTheme.bodySmall,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLastUpdateInfo(SyncStatus syncStatus, ThemeData theme) {
+    if (!syncStatus.hasLastUpdateTime) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      children: [
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Icon(
+              Icons.access_time,
+              size: 16,
+              color: theme.colorScheme.secondary,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Last update: ${_formatTimestamp(syncStatus.lastUpdateReceivedTime!)}',
+                style: theme.textTheme.bodySmall,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 }
