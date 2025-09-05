@@ -1,21 +1,17 @@
+import 'package:ditto_live/ditto_live.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
-import 'cross_platform/cross_platform.dart';
+import '../cross_platform/cross_platform.dart';
 
 class QueryResultExporter {
-  static bool hasActualResults(dynamic rawQueryResult) {
-    if (rawQueryResult == null) return false;
-    return rawQueryResult.items.isNotEmpty;
-  }
-
   static Future<ShareResult> shareResults(
-    dynamic rawQueryResult, {
+    QueryResult? rawQueryResult, {
     Function(String)? onStatusUpdate,
   }) async {
-    if (!hasActualResults(rawQueryResult)) {
+    if (rawQueryResult == null || rawQueryResult.items.isEmpty) {
       throw Exception('No actual results to share');
     }
 
@@ -23,15 +19,11 @@ class QueryResultExporter {
       onStatusUpdate?.call("Preparing results for sharing...");
 
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      
-      // Extract raw JSON data from query results
-      final jsonResults = <Map<String, dynamic>>[];
-      for (final item in rawQueryResult.items) {
-        jsonResults.add(item.value);
-      }
-      
-      // Convert to JSON string
-      final jsonContent = jsonResults.map((item) => item.toString()).join('\n');
+
+      // Extract and convert query results to JSON string
+      final jsonContent = rawQueryResult.items
+          .map((item) => item.value.toString())
+          .join('\n');
 
       if (kIsWeb) {
         return await _shareOnWeb(jsonContent, timestamp);
@@ -55,7 +47,8 @@ class QueryResultExporter {
         text: 'Query results from Ditto database');
   }
 
-  static Future<ShareResult> _shareOnMobile(String content, int timestamp) async {
+  static Future<ShareResult> _shareOnMobile(
+      String content, int timestamp) async {
     final tempDir = await getTemporaryDirectory();
     final tempResultsPath =
         p.join(tempDir.path, "ditto_query_results_$timestamp.json");
