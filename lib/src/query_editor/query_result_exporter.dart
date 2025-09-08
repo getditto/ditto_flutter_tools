@@ -50,29 +50,18 @@ class QueryResultExporter {
   static Future<ShareResult> _shareOnMobile(
       String content, int timestamp) async {
     final tempDir = await getTemporaryDirectory();
-    final tempResultsPath =
-        p.join(tempDir.path, "ditto_query_results_$timestamp.json");
 
-    try {
-      final file = XFile.fromData(
-        Uint8List.fromList(content.codeUnits),
-        name: 'ditto_query_results_$timestamp.json',
-        mimeType: 'application/json',
-      );
+    final file = XFile.fromData(
+      Uint8List.fromList(content.codeUnits),
+      name: 'ditto_query_results_$timestamp.json',
+      mimeType: 'application/json',
+    );
 
-      final result = await Share.shareXFiles([file],
-          subject: 'Ditto Query Results',
-          text: 'Query results from Ditto database');
+    final result = await Share.shareXFiles([file],
+        subject: 'Ditto Query Results',
+        text: 'Query results from Ditto database');
 
-      return result;
-    } finally {
-      // Clean up temporary file if it was created on disk
-      try {
-        await deleteTemporaryFile(tempResultsPath);
-      } catch (e) {
-        // Ignore cleanup errors for in-memory XFile
-      }
-    }
+    return result;
   }
 
   static String getShareStatusMessage(ShareResultStatus status) {
