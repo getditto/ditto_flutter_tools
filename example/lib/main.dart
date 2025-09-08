@@ -1,11 +1,19 @@
 // ignore_for_file: invalid_use_of_visible_for_testing_member
 
-import 'package:ditto_flutter_tools/ditto_flutter_tools.dart';
 import 'package:example/services/subscription_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:beamer/beamer.dart';
 
 import 'services/ditto_service.dart';
+import 'widgets/main_list_view.dart';
+import 'screens/peers_list_screen.dart';
+import 'screens/sync_status_screen.dart';
+import 'screens/peer_sync_status_screen.dart';
+import 'screens/permissions_health_screen.dart';
+import 'screens/disk_usage_screen.dart';
+import 'screens/system_settings_screen.dart';
+import 'constants/routes.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,15 +29,30 @@ class DittoApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Ditto Tools',
-      theme: _lightTheme,
-      darkTheme: _darkTheme,
-      themeMode: ThemeMode.system,
-      home: const DittoExample(),
-    );
+    return const DittoExample();
   }
+}
+
+class DittoExample extends StatefulWidget {
+  const DittoExample({super.key});
+
+  @override
+  State<DittoExample> createState() => _DittoExampleState();
+}
+
+class _DittoExampleState extends State<DittoExample> {
+  //load in values from env file
+  final appID = dotenv.env['DITTO_APP_ID'] ??
+      (throw Exception("DITTO_APP_ID not found in .env file"));
+  final token = dotenv.env['DITTO_TOKEN'] ??
+      (throw Exception("DITTO_TOKEN not found in .env file"));
+  final authUrl = dotenv.env['DITTO_AUTH_URL'] ??
+      (throw Exception("DITTO_AUTH_URL not found in .env file"));
+  final websocketUrl = dotenv.env['DITTO_WEBSOCKET_URL'] ??
+      (throw Exception("DITTO_WEBSOCKET_URL not found in .env file"));
+  BeamerDelegate? _beamerDelegate;
+  bool _isInitializing = true;
+  String? _errorMessage;
 
   static final ThemeData _lightTheme = ThemeData(
     brightness: Brightness.light,
@@ -64,29 +87,6 @@ class DittoApp extends StatelessWidget {
       outline: Colors.grey[600],
     ),
   );
-}
-
-class DittoExample extends StatefulWidget {
-  const DittoExample({super.key});
-
-  @override
-  State<DittoExample> createState() => _DittoExampleState();
-}
-
-class _DittoExampleState extends State<DittoExample> {
-  //load in values from env file
-  final appID = dotenv.env['DITTO_APP_ID'] ??
-      (throw Exception("DITTO_APP_ID not found in .env file"));
-  final token = dotenv.env['DITTO_TOKEN'] ??
-      (throw Exception("DITTO_TOKEN not found in .env file"));
-  final authUrl = dotenv.env['DITTO_AUTH_URL'] ??
-      (throw Exception("DITTO_AUTH_URL not found in .env file"));
-  final websocketUrl = dotenv.env['DITTO_WEBSOCKET_URL'] ??
-      (throw Exception("DITTO_WEBSOCKET_URL not found in .env file"));
-  DittoService? _dittoService;
-  SubscriptionService? _subscriptionService;
-  bool _isInitializing = true;
-  String? _errorMessage;
 
   @override
   void initState() {
@@ -103,9 +103,38 @@ class _DittoExampleState extends State<DittoExample> {
       // Only create subscription service after Ditto is fully initialized
       final subscriptionService = SubscriptionService(dittoService);
 
+      final beamerDelegate = BeamerDelegate(
+        initialPath: homeRoute,
+        locationBuilder: RoutesLocationBuilder(
+          routes: {
+            homeRoute: (context, state, data) => MainListView(
+                  dittoService: dittoService,
+                  subscriptionService: subscriptionService,
+                ),
+            peersRoute: (context, state, data) => PeersListScreen(
+                  ditto: dittoService.ditto,
+                ),
+            syncStatusRoute: (context, state, data) => SyncStatusScreen(
+                  ditto: dittoService.ditto,
+                  subscriptions: subscriptionService.subscriptions,
+                ),
+            peerSyncStatusRoute: (context, state, data) => PeerSyncStatusScreen(
+                  ditto: dittoService.ditto,
+                ),
+            permissionsHealthRoute: (context, state, data) =>
+                const PermissionsHealthScreen(),
+            diskUsageRoute: (context, state, data) => DiskUsageScreen(
+                  ditto: dittoService.ditto,
+                ),
+            systemSettingsRoute: (context, state, data) => SystemSettingsScreen(
+                  ditto: dittoService.ditto,
+                ),
+          },
+        ),
+      );
+
       setState(() {
-        _dittoService = dittoService;
-        _subscriptionService = subscriptionService;
+        _beamerDelegate = beamerDelegate;
         _isInitializing = false;
         _errorMessage = null;
       });
@@ -124,19 +153,26 @@ class _DittoExampleState extends State<DittoExample> {
       return _loading;
     }
 
-    final dittoService = _dittoService;
-    if (dittoService == null) {
+    final beamerDelegate = _beamerDelegate;
+    if (beamerDelegate == null) {
       return _buildError(_errorMessage);
     }
 
-    return _MainListView(
-        dittoService: dittoService, subscriptionService: _subscriptionService!);
+    return MaterialApp.router(
+      debugShowCheckedModeBanner: false,
+      title: 'Ditto Tools',
+      theme: _lightTheme,
+      darkTheme: _darkTheme,
+      themeMode: ThemeMode.system,
+      routerDelegate: beamerDelegate,
+      routeInformationParser: BeamerParser(),
+    );
   }
 
   Widget get _loading => MaterialApp(
         debugShowCheckedModeBanner: false,
-        theme: DittoApp._lightTheme,
-        darkTheme: DittoApp._darkTheme,
+        theme: _lightTheme,
+        darkTheme: _darkTheme,
         themeMode: ThemeMode.system,
         home: Scaffold(
           appBar: AppBar(title: const Text("Ditto Tools")),
@@ -156,8 +192,8 @@ class _DittoExampleState extends State<DittoExample> {
   Widget _buildError(String? errorMessage) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: DittoApp._lightTheme,
-      darkTheme: DittoApp._darkTheme,
+      theme: _lightTheme,
+      darkTheme: _darkTheme,
       themeMode: ThemeMode.system,
       home: Builder(
         builder: (context) => Scaffold(
@@ -195,307 +231,6 @@ class _DittoExampleState extends State<DittoExample> {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _MainListView extends StatelessWidget {
-  final DittoService dittoService;
-  final SubscriptionService subscriptionService;
-
-  const _MainListView({
-    required this.dittoService,
-    required this.subscriptionService,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Ditto Tools"),
-      ),
-      body: ListView(
-        children: [
-          const SizedBox(height: 20),
-          // NETWORK Section
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Text(
-              "NETWORK",
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: Theme.of(context)
-                    .textTheme
-                    .labelLarge
-                    ?.color
-                    ?.withOpacity(0.6),
-                letterSpacing: 0.5,
-              ),
-            ),
-          ),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                  color:
-                      Theme.of(context).colorScheme.outline.withOpacity(0.3)),
-            ),
-            child: Column(
-              children: [
-                ListTile(
-                  leading: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(
-                      Icons.devices,
-                      color: Theme.of(context).colorScheme.onPrimary,
-                      size: 20,
-                    ),
-                  ),
-                  title: const Text("Peers List"),
-                  trailing: Icon(Icons.chevron_right,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant),
-                  onTap: () {
-                    Navigator.of(context).push(
-                      PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) =>
-                            Material(
-                          child: Scaffold(
-                            appBar: AppBar(title: const Text("Peers List")),
-                            body: PeerListView(ditto: dittoService.ditto),
-                          ),
-                        ),
-                        transitionsBuilder:
-                            (context, animation, secondaryAnimation, child) {
-                          return SlideTransition(
-                            position: Tween<Offset>(
-                              begin: const Offset(1.0, 0.0),
-                              end: Offset.zero,
-                            ).animate(animation),
-                            child: child,
-                          );
-                        },
-                      ),
-                    );
-                  },
-                ),
-                const Divider(),
-                ListTile(
-                  leading: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.secondary,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(
-                      Icons.sync,
-                      color: Theme.of(context).colorScheme.onSecondary,
-                      size: 20,
-                    ),
-                  ),
-                  title: const Text("Sync Status"),
-                  trailing: Icon(Icons.chevron_right,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant),
-                  onTap: () {
-                    Navigator.of(context).push(
-                      PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) =>
-                            Material(
-                          child: Scaffold(
-                            appBar: AppBar(title: const Text("Sync Status")),
-                            body: SyncStatusView(
-                              ditto: dittoService.ditto!,
-                              subscriptions: subscriptionService.subscriptions,
-                            ),
-                          ),
-                        ),
-                        transitionsBuilder:
-                            (context, animation, secondaryAnimation, child) {
-                          return SlideTransition(
-                            position: Tween<Offset>(
-                              begin: const Offset(1.0, 0.0),
-                              end: Offset.zero,
-                            ).animate(animation),
-                            child: child,
-                          );
-                        },
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          // SYSTEM Section
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Text(
-              "SYSTEM",
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: Theme.of(context)
-                    .textTheme
-                    .labelLarge
-                    ?.color
-                    ?.withOpacity(0.6),
-                letterSpacing: 0.5,
-              ),
-            ),
-          ),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                  color:
-                      Theme.of(context).colorScheme.outline.withOpacity(0.3)),
-            ),
-            child: Column(
-              children: [
-                ListTile(
-                  leading: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: Colors.purple,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.health_and_safety,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ),
-                  title: const Text("Permissions Health"),
-                  trailing: Icon(Icons.chevron_right,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant),
-                  onTap: () {
-                    Navigator.of(context).push(
-                      PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) =>
-                            Material(
-                          child: Scaffold(
-                            appBar:
-                                AppBar(title: const Text("Permissions Health")),
-                            body: const PermissionsHealthView(),
-                          ),
-                        ),
-                        transitionsBuilder:
-                            (context, animation, secondaryAnimation, child) {
-                          return SlideTransition(
-                            position: Tween<Offset>(
-                              begin: const Offset(1.0, 0.0),
-                              end: Offset.zero,
-                            ).animate(animation),
-                            child: child,
-                          );
-                        },
-                      ),
-                    );
-                  },
-                ),
-                const Divider(),
-                ListTile(
-                  leading: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.tertiary,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(
-                      Icons.storage,
-                      color: Theme.of(context).colorScheme.onTertiary,
-                      size: 20,
-                    ),
-                  ),
-                  title: const Text("Disk Usage"),
-                  trailing: Icon(Icons.chevron_right,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant),
-                  onTap: () {
-                    Navigator.of(context).push(
-                      PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) =>
-                            Material(
-                          child: Scaffold(
-                            appBar: AppBar(title: const Text("Disk Usage")),
-                            body: DiskUsageView(ditto: dittoService.ditto!),
-                          ),
-                        ),
-                        transitionsBuilder:
-                            (context, animation, secondaryAnimation, child) {
-                          return SlideTransition(
-                            position: Tween<Offset>(
-                              begin: const Offset(1.0, 0.0),
-                              end: Offset.zero,
-                            ).animate(animation),
-                            child: child,
-                          );
-                        },
-                      ),
-                    );
-                  },
-                ),
-                const Divider(),
-                ListTile(
-                  leading: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: Colors.orange,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.settings,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ),
-                  title: const Text("System Settings"),
-                  trailing: Icon(Icons.chevron_right,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant),
-                  onTap: () {
-                    Navigator.of(context).push(
-                      PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) =>
-                            Material(
-                          child: Scaffold(
-                            appBar:
-                                AppBar(title: const Text("System Settings")),
-                            body:
-                                SystemSettingsView(ditto: dittoService.ditto!),
-                          ),
-                        ),
-                        transitionsBuilder:
-                            (context, animation, secondaryAnimation, child) {
-                          return SlideTransition(
-                            position: Tween<Offset>(
-                              begin: const Offset(1.0, 0.0),
-                              end: Offset.zero,
-                            ).animate(animation),
-                            child: child,
-                          );
-                        },
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }

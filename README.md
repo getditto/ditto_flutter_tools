@@ -54,6 +54,69 @@ The `PeerListView` uses Ditto's presence observer to provide real-time updates:
 - No manual refresh required
 
 
+## `PeerSyncStatusView`
+
+The `PeerSyncStatusView` provides a real-time interface for monitoring the synchronization status between your device and connected peers in the Ditto mesh network. This tool queries Ditto's internal `system:data_sync_info` collection to display detailed sync session information, helping developers debug data synchronization issues and monitor sync health.
+
+### Usage
+
+The `PeerSyncStatusView` can be used as a standalone widget in your Flutter application:
+
+```dart
+import 'package:ditto_flutter_tools/ditto_flutter_tools.dart';
+
+// In your widget build method
+Scaffold(
+  appBar: AppBar(title: Text('Peer Sync Status')),
+  body: PeerSyncStatusView(ditto: myDittoInstance),
+)
+```
+
+### Features
+
+The peer sync status view provides:
+
+1. **Connection Status Grouping** - Separates peers into "Connected" and "Not Connected" sections for quick status overview
+2. **Peer Type Identification** - Distinguishes between Cloud Server and Peer Device connections
+3. **Sync Session Information** - Shows the synchronization session status for each peer
+4. **Database Commit Tracking** - Displays which local database commit ID each peer has synced to
+5. **Last Update Timestamps** - Shows when the last sync update was received from each peer
+6. **Real-time Updates** - Automatically updates as sync status changes
+
+### Information Displayed
+
+For each peer, the view shows:
+- **Peer Type** - Either "Cloud Server" for Ditto Big Peer or "Peer Device" for mesh network peers
+- **Peer ID** - The unique identifier for the peer
+- **Connection Status** - Visual indicator showing if the peer is currently connected
+- **Sync Commit ID** - The local database commit ID that this peer has synced up to (when available)
+- **Last Update Time** - Formatted timestamp showing when the last update was received (displays as "Today", "Yesterday", or full date/time)
+
+### Data Source & DQL Strict Mode Support
+
+The `PeerSyncStatusView` automatically detects your Ditto instance's DQL strict mode setting and uses the appropriate query:
+
+This provides access to Ditto's internal synchronization metadata, giving insights into:
+- Which peers have active sync sessions (`Connected` vs `Not Connected`)
+- How up-to-date each peer is with local data changes (commit IDs)
+- When synchronization last occurred with each peer (timestamps)
+
+### Use Cases
+
+This view is particularly useful for:
+- **Debugging sync issues** - Identify which peers are not receiving updates
+- **Monitoring sync latency** - Check when peers last synchronized  
+- **Verifying cloud connectivity** - Confirm that devices are syncing with Ditto Cloud
+- **Understanding sync topology** - See which peers are actively participating in data synchronization
+- **Performance monitoring** - Track sync commit progress across the network
+
+### Implementation Notes
+
+- **Automatic Mode Detection**: No configuration needed - works with both DQL strict modes
+- **Real-time Updates**: Uses Ditto store observers for live sync status monitoring  
+- **Proper Lifecycle Management**: Handles widget disposal cleanly to prevent memory leaks
+- **Error Handling**: Gracefully handles cases where sync data is unavailable
+
 ## `DiskUsageView`
 
 The `DiskUsageView` provides a comprehensive interface for monitoring Ditto database disk usage and exporting data for debugging or backup purposes. This tool helps developers understand storage consumption and provides convenient export functionality for both database files and logs.
