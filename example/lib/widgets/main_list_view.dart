@@ -115,6 +115,60 @@ class MainListView extends StatelessWidget {
               ],
             ),
           ),
+
+          const SizedBox(height: 20),
+          // DITTO Store Section
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Text(
+              "DITTO STORE",
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context)
+                    .textTheme
+                    .labelLarge
+                    ?.color
+                    ?.withOpacity(0.6),
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                  color:
+                  Theme.of(context).colorScheme.outline.withOpacity(0.3)),
+            ),
+            child: Column(
+              children: [
+                ListTile(
+                  leading: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: Colors.lightBlue,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.code,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                  title: const Text("Query Editor"),
+                  trailing: Icon(Icons.chevron_right,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  onTap: () =>
+                      Beamer.of(context).beamToNamed(queryEditorRoute),
+                ),
+              ],
+            ),
+          ),
+
           const SizedBox(height: 20),
           // SYSTEM Section
           Padding(

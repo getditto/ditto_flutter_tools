@@ -159,9 +159,40 @@ class _QueryEditorViewState extends State<QueryEditorView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Enter DQL Statement:',
-              style: Theme.of(context).textTheme.labelLarge,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Enter DQL Statement:',
+                  style: Theme.of(context).textTheme.labelLarge,
+                ),
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.share),
+                      tooltip: 'Share Results',
+                      onPressed: _hasActualResults() ? _shareResults : null,
+                    ),
+                    _isExecuting
+                        ? const SizedBox(
+                            width: 48,
+                            height: 48,
+                            child: Center(
+                              child: SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                            ),
+                          )
+                        : IconButton(
+                            icon: const Icon(Icons.play_arrow),
+                            tooltip: 'Execute Query',
+                            onPressed: _executeQuery,
+                          ),
+                  ],
+                ),
+              ],
             ),
             const SizedBox(height: 8),
             TextField(
@@ -180,33 +211,6 @@ class _QueryEditorViewState extends State<QueryEditorView> {
         ),
       );
 
-  List<Widget> get _appBarActions => [
-        IconButton(
-          icon: const Icon(Icons.share),
-          tooltip: 'Share Results',
-          onPressed: _hasActualResults() ? _shareResults : null,
-        ),
-        Padding(
-          padding: const EdgeInsets.only(right: 8.0),
-          child: _isExecuting
-              ? const SizedBox(
-                  width: 48,
-                  height: 48,
-                  child: Center(
-                    child: SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  ),
-                )
-              : IconButton(
-                  icon: const Icon(Icons.play_arrow),
-                  tooltip: 'Execute Query',
-                  onPressed: _executeQuery,
-                ),
-        ),
-      ];
 
   Widget get _errorDisplay => Container(
         padding: const EdgeInsets.all(12),
@@ -380,18 +384,12 @@ class _QueryEditorViewState extends State<QueryEditorView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Query Editor'),
-        actions: _appBarActions,
-      ),
-      body: Column(
-        children: [
-          _queryInputSection,
-          const Divider(),
-          _resultsSection,
-        ],
-      ),
+    return Column(
+      children: [
+        _queryInputSection,
+        const Divider(),
+        _resultsSection,
+      ],
     );
   }
 }
