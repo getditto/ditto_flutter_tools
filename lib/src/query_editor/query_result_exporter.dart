@@ -1,10 +1,6 @@
 import 'package:ditto_live/ditto_live.dart';
 import 'package:flutter/foundation.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
-
-import '../cross_platform/cross_platform.dart';
 
 class QueryResultExporter {
   static Future<ShareResult> shareResults(
@@ -49,19 +45,15 @@ class QueryResultExporter {
 
   static Future<ShareResult> _shareOnMobile(
       String content, int timestamp) async {
-    final tempDir = await getTemporaryDirectory();
-
     final file = XFile.fromData(
       Uint8List.fromList(content.codeUnits),
       name: 'ditto_query_results_$timestamp.json',
       mimeType: 'application/json',
     );
 
-    final result = await Share.shareXFiles([file],
+    return await Share.shareXFiles([file],
         subject: 'Ditto Query Results',
         text: 'Query results from Ditto database');
-
-    return result;
   }
 
   static String getShareStatusMessage(ShareResultStatus status) {
@@ -71,6 +63,10 @@ class QueryResultExporter {
       case ShareResultStatus.dismissed:
         return "Sharing was cancelled";
       case ShareResultStatus.unavailable:
+        // On web, "unavailable" actually means the file was downloaded
+        if (kIsWeb) {
+          return "Results downloaded successfully!";
+        }
         return "Sharing is not available on this platform";
     }
   }
