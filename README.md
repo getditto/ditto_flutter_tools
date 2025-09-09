@@ -347,6 +347,84 @@ In the second scenario, you can be quite confident that your data is still the m
 That said, the aim of this tool is to provide heuristics that you can combine with an understanding of your data model to get an accurate picture of the state of your device.
 If you have specific knowledge about your data model or update frequency, you can use that knowledge to get a clearer view of the data you have locally.
 
+## `QueryEditorView`
+
+The `QueryEditorView` provides an interactive interface for executing DQL (Ditto Query Language) statements against your Ditto database. This tool helps developers test queries, inspect data, and perform CRUD operations during development and debugging, with built-in export functionality for query results.
+
+### Usage
+
+The `QueryEditorView` can be used as a standalone widget in your Flutter application:
+
+```dart
+import 'package:ditto_flutter_tools/ditto_flutter_tools.dart';
+
+// In your widget build method
+Scaffold(
+  appBar: AppBar(title: Text('Query Editor')),
+  body: QueryEditorView(ditto: myDittoInstance),
+)
+```
+
+Or navigate to it from your debug menu:
+
+```dart
+Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (context) => QueryEditorView(ditto: ditto),
+  ),
+);
+```
+
+### Features
+
+The query editor provides:
+
+1. **Multi-line Query Input** - A text field for entering DQL statements with syntax hints
+2. **Async Query Execution** - Non-blocking query execution with loading indicator  
+3. **Paginated Results Display** - Large result sets with configurable pagination (10, 25, 50, 100 items per page)
+4. **Export Functionality** - Share query results as JSON files using the native Share API
+5. **Error Handling** - Clear error messages for invalid queries or execution failures
+6. **Multiple Query Types** - Supports SELECT, INSERT, UPDATE, and DELETE operations
+
+### Export Functionality
+
+The query editor includes built-in export capabilities:
+
+#### Share Results
+- **Smart Export**: Share button only appears when query results contain actual data (not status messages)
+- **JSON Format**: Results are exported as raw JSON data without formatting or metadata
+- **Automatic Cleanup**: Temporary files are automatically cleaned up after sharing
+
+#### Export Features
+- **JSON Files**: Query results are exported with `.json` extension and proper MIME type
+- **Raw Data Only**: Exports only the actual query result data, no headers or formatting
+
+### Query Results & Pagination
+
+The view handles multiple result types with advanced pagination:
+
+1. **Query Results (SELECT)**: 
+   - Each document displayed as a separate item
+   - Configurable pagination (10, 25, 50, 100 items per page)
+   - Page navigation controls with direct page input
+   - Results counter showing total items and current page range
+   - Export functionality available for data results
+
+2. **Mutation Results (INSERT/UPDATE/DELETE)**: 
+   - List of affected document IDs
+   - Number of documents modified  
+   - Transaction/commit ID when available
+   - No export functionality (status messages only)
+
+### DQL Documentation
+
+For comprehensive DQL syntax and examples, refer to the official Ditto documentation:
+- [Read Operations](https://docs.ditto.live/sdk/latest/crud/read)
+- [Create Operations](https://docs.ditto.live/sdk/latest/crud/create)  
+- [Update Operations](https://docs.ditto.live/sdk/latest/crud/update)
+- [Delete Operations](https://docs.ditto.live/sdk/latest/crud/delete)
+
 
 ## `PermissionsHealthView`
 
@@ -505,6 +583,8 @@ This package uses the following third-party libraries:
 - **License**: BSD-3-Clause
 - **Repository**: https://pub.dev/packages/share_plus
 - **Note**: Used for all export functionality (logs and database) to provide a consistent, native sharing experience across iOS, Android, macOS, and Linux platforms.
+
+
 
 ## Support
 

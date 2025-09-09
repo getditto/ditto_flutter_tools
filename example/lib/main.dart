@@ -13,6 +13,7 @@ import 'screens/peer_sync_status_screen.dart';
 import 'screens/permissions_health_screen.dart';
 import 'screens/disk_usage_screen.dart';
 import 'screens/system_settings_screen.dart';
+import 'screens/query_editor_screen.dart';
 import 'constants/routes.dart';
 
 Future<void> main() async {
@@ -129,6 +130,9 @@ class _DittoExampleState extends State<DittoExample> {
             systemSettingsRoute: (context, state, data) => SystemSettingsScreen(
                   ditto: dittoService.ditto,
                 ),
+            queryEditorRoute: (context, state, data) => QueryEditorScreen(
+              ditto: dittoService.ditto,
+            ),
           },
         ),
       );
