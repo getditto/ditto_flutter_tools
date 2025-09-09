@@ -1,3 +1,13 @@
+## 2.0.0
+- Updated to Ditto SDK 4.12.1
+- Added new features:
+  - Query Editor
+  - System Settings
+  - Peer Sync Status
+  - Disk Usage
+
+See README.md for implementation details.
+
 ## 1.0.0
 
 Updates to use the GA release of the Ditto SDK

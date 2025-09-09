@@ -135,7 +135,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "1.0.0"
+    version: "2.0.0"
   ditto_live:
     dependency: "direct main"
     description:
