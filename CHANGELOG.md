@@ -1,4 +1,4 @@
-## 1.0.1
+## 2.0.0
 - Updated to Ditto SDK 4.12.1
 - Added new features:
   - Query Editor
