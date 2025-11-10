@@ -16,10 +16,9 @@ Flutter package providing diagnostic and debugging tools for Ditto (peer-to-peer
 ### Core Library (`/lib`)
 - `ditto_flutter_tools.dart` - Main package export file
 - **src/**
-  - `sync_status_helper.dart` - Monitors subscription sync status programmatically
-  - `sync_status_view.dart` - Pre-made UI widget for real-time sync debugging
   - `presence_viewer.dart` - Web-based presence visualization tool
   - `peers_list.dart` - Lists and displays connected peers
+  - `peer_sync_status/` - Peer synchronization status monitoring
   - `log_level_switch.dart` - Controls Ditto logging levels
   - **disk_usage/** - Disk usage monitoring functionality
   - **cross_platform/** - Platform-specific implementations (native/web/stub)
@@ -33,16 +32,12 @@ Full Flutter application demonstrating package usage:
 
 ## Key Features
 
-### SyncStatusHelper
-- Monitors multiple Ditto subscriptions
-- Provides sync status: `disconnected`, `connectedIdle`, `connectedSyncing`
-- Tracks connection history and last update times
-- Configurable idle timeout interval
-
-### SyncStatusView
-- Ready-to-use UI component for sync status
-- Real-time visualization of sync state
-- Embeddable in debug screens
+### PeerSyncStatusView
+- Real-time monitoring of peer synchronization status
+- Queries Ditto's `system:data_sync_info` collection
+- Groups peers by connection status
+- Shows sync commit IDs and last update times
+- Supports DQL strict mode detection
 
 ### Presence Viewer
 - Web-based visualization of Ditto mesh network

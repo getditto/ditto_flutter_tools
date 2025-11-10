@@ -1,3 +1,9 @@
+## 3.0.0 (Unreleased)
+- **BREAKING CHANGE**: Removed deprecated `SyncStatusHelper` and `SyncStatusView` classes
+  - These have been replaced by the more comprehensive `PeerSyncStatusView`
+  - Migration: Replace `SyncStatusView` with `PeerSyncStatusView` in your code
+  - The new `PeerSyncStatusView` provides better peer-level synchronization tracking
+
 ## 2.0.0
 - Updated to Ditto SDK 4.12.1
 - Added new features:

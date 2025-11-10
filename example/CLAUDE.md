@@ -16,12 +16,11 @@ Example Flutter application demonstrating the usage of the ditto_flutter_tools p
 
 ### Main Application (`/lib`)
 - `main.dart` - Main app entry point with Ditto tools showcase
-- **providers/**
-  - `ditto_provider.dart` - Ditto SDK initialization and configuration
 - **services/**
-  - `subscription_service.dart` - Manages Ditto sync subscriptions
+  - `ditto_service.dart` - Ditto SDK initialization and configuration
 - **widgets/**
-  - `presence.dart` - Presence visualization widget
+  - `main_list_view.dart` - Main navigation widget
+- **screens/** - Individual screens for each diagnostic tool
 
 ### Platform Directories
 - `android/` - Android platform configuration
@@ -49,17 +48,11 @@ const websocketUrl = "YOUR_WEBSOCKET_URL";
 - Configures peer-to-peer and WebSocket connections
 - Sets up persistent storage
 
-#### SubscriptionService
-- Registers sync subscriptions for collections:
-  - `tasks` collection
-  - `movies` collection
-  - `comments` collection
-
 #### Main Features Screen
 Provides access to diagnostic tools:
 - **Network Tools**:
   - Peers List - View connected peers
-  - Sync Status - Monitor subscription sync state
+  - Peer Sync Status - Monitor sync state
 - **System Tools**:
   - Disk Usage - Monitor Ditto database disk usage
 

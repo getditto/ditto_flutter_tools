@@ -1,6 +1,5 @@
 // ignore_for_file: invalid_use_of_visible_for_testing_member
 
-import 'package:example/services/subscription_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:beamer/beamer.dart';
@@ -8,7 +7,6 @@ import 'package:beamer/beamer.dart';
 import 'services/ditto_service.dart';
 import 'widgets/main_list_view.dart';
 import 'screens/peers_list_screen.dart';
-import 'screens/sync_status_screen.dart';
 import 'screens/peer_sync_status_screen.dart';
 import 'screens/permissions_health_screen.dart';
 import 'screens/disk_usage_screen.dart';
@@ -101,23 +99,15 @@ class _DittoExampleState extends State<DittoExample> {
       final dittoService = DittoService();
       await dittoService.initialize(appID, token, authUrl, websocketUrl);
 
-      // Only create subscription service after Ditto is fully initialized
-      final subscriptionService = SubscriptionService(dittoService);
-
       final beamerDelegate = BeamerDelegate(
         initialPath: homeRoute,
         locationBuilder: RoutesLocationBuilder(
           routes: {
             homeRoute: (context, state, data) => MainListView(
                   dittoService: dittoService,
-                  subscriptionService: subscriptionService,
                 ),
             peersRoute: (context, state, data) => PeersListScreen(
                   ditto: dittoService.ditto,
-                ),
-            syncStatusRoute: (context, state, data) => SyncStatusScreen(
-                  ditto: dittoService.ditto,
-                  subscriptions: subscriptionService.subscriptions,
                 ),
             peerSyncStatusRoute: (context, state, data) => PeerSyncStatusScreen(
                   ditto: dittoService.ditto,
