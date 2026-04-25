@@ -486,7 +486,7 @@ MaterialApp(
 
 For issues or questions:
 - Open an issue on [GitHub](https://github.com/getditto/ditto_flutter_tools/issues)
-- Contact Ditto Support at support@ditto.live
+- Contact Ditto Support at support@ditto.com
 
 ## License
 

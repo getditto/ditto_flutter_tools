@@ -120,7 +120,7 @@ The package includes web assets for the presence viewer:
 4. Test on all supported platforms
 
 ## Support
-For support, contact Ditto Support at support@ditto.live
+For support, contact Ditto Support at support@ditto.com
 Repository: https://github.com/getditto/ditto_flutter_tools
 
 # General Rules

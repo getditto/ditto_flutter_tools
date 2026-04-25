@@ -588,4 +588,4 @@ This package uses the following third-party libraries:
 
 ## Support
 
-For support, please contact Ditto Support (<support@ditto.live>).
+For support, please contact Ditto Support (<support@ditto.com>).
