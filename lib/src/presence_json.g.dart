@@ -9,10 +9,10 @@ Map<String, dynamic> _$PresenceGraphToJson(PresenceGraph instance) =>
     };
 
 Map<String, dynamic> _$PeerToJson(Peer instance) => <String, dynamic>{
-      'peerKeyString': instance.peerKeyString,
+      'peerKeyString': instance.peerKey,
       'deviceName': instance.deviceName,
       'os': instance.os,
-      'isConnectedToDittoCloud': instance.isConnectedToDittoCloud,
+      'isConnectedToDittoCloud': instance.isConnectedToDittoServer,
       'isCompatible': instance.isCompatible,
       'dittoSdkVersion': instance.dittoSdkVersion,
       'connections': instance.connections.map(_$ConnectionToJson).toList(),
@@ -23,10 +23,9 @@ Map<String, dynamic> _$PeerToJson(Peer instance) => <String, dynamic>{
 Map<String, dynamic> _$ConnectionToJson(Connection instance) =>
     <String, dynamic>{
       'id': instance.id,
-      'peerKeyString1': instance.peerKeyString1,
-      'peerKeyString2': instance.peerKeyString2,
+      'peerKeyString1': instance.peer1,
+      'peerKeyString2': instance.peer2,
       'connectionType': _$ConnectionTypeEnumMap[instance.connectionType]!,
-      'approximateDistanceInMeters': instance.approximateDistanceInMeters,
     };
 
 const _$ConnectionTypeEnumMap = {

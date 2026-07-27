@@ -3,7 +3,8 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
 /// Service for managing Bluetooth status using flutter_blue_plus
 class BluetoothStatusService {
-  static final BluetoothStatusService _instance = BluetoothStatusService._internal();
+  static final BluetoothStatusService _instance =
+      BluetoothStatusService._internal();
   factory BluetoothStatusService() => _instance;
   BluetoothStatusService._internal();
 
@@ -26,9 +27,9 @@ class BluetoothStatusService {
     if (_isInitialized) {
       return; // Already initialized
     }
-    
+
     _ensureInitialized();
-    
+
     // Start listening to adapter state changes
     try {
       _adapterSubscription = FlutterBluePlus.adapterState.listen((state) {
@@ -40,10 +41,10 @@ class BluetoothStatusService {
       // Platform not supported (e.g., in tests or unsupported platforms)
       // Service will still work but won't provide real-time updates
     }
-    
+
     _isInitialized = true;
   }
-  
+
   /// Ensure the stream controller is created and ready
   void _ensureInitialized() {
     if (_stateController == null || _stateController!.isClosed) {
@@ -70,11 +71,11 @@ class BluetoothStatusService {
     try {
       // First check if Bluetooth is supported
       final isSupported = await isBluetoothSupported();
-      
+
       if (!isSupported) {
         return BluetoothAdapterState.unavailable;
       }
-      
+
       // On iOS, the initial state might be unknown, so wait for a valid state
       var state = currentAdapterState;
       if (state == BluetoothAdapterState.unknown) {
@@ -82,7 +83,7 @@ class BluetoothStatusService {
         await Future.delayed(const Duration(milliseconds: 200));
         state = currentAdapterState;
       }
-      
+
       return state;
     } catch (e) {
       // If there's an error, assume unavailable (common on emulators)
@@ -142,13 +143,13 @@ class BluetoothStatusService {
   /// Get detailed Bluetooth support information
   Future<Map<String, dynamic>> getDetailedBluetoothInfo() async {
     final info = <String, dynamic>{};
-    
+
     try {
       // Check if Bluetooth is supported
       final isSupported = await FlutterBluePlus.isSupported;
       info['isSupported'] = isSupported;
       info['supportedString'] = isSupported ? 'Supported' : 'Not Supported';
-      
+
       // Get current adapter state
       final adapterState = currentAdapterState;
       info['adapterState'] = adapterState;
@@ -156,7 +157,7 @@ class BluetoothStatusService {
     } catch (e) {
       info['error'] = 'Failed to get Bluetooth info: $e';
     }
-    
+
     return info;
   }
 
@@ -167,7 +168,7 @@ class BluetoothStatusService {
       _dispose();
     }
   }
-  
+
   /// Internal dispose method
   void _dispose() {
     _adapterSubscription?.cancel();
@@ -177,7 +178,7 @@ class BluetoothStatusService {
     _isInitialized = false;
     _subscriberCount = 0;
   }
-  
+
   /// Force dispose (for testing or emergency cleanup)
   void forceDispose() {
     _dispose();

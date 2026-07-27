@@ -21,16 +21,8 @@ int _sizeOfEntity(FileSystemEntity entity) {
   return stat.size;
 }
 
-/// Parameters for ZIP creation in isolate
-class _ZipParams {
-  final String sourceDir;
-  final String outputPath;
-  
-  _ZipParams(this.sourceDir, this.outputPath);
-}
-
 /// Creates ZIP file in background isolate to prevent UI blocking
-void _createZipFile(_ZipParams params) {
+void _createZipFile(({String sourceDir, String outputPath}) params) {
   final encoder = ZipFileEncoder();
   encoder.create(params.outputPath);
   encoder.addDirectory(Directory(params.sourceDir), includeDirName: false);
@@ -45,24 +37,26 @@ Future<String> createTempZipForSharing(String sourceDir) async {
     if (!await sourceDirectory.exists()) {
       throw Exception('Source directory does not exist: $sourceDir');
     }
-    
+
     final tempDir = Directory.systemTemp;
-    final tempZipPath = join(tempDir.path, 'ditto-export-${DateTime.now().millisecondsSinceEpoch}.zip');
-    
+    final tempZipPath = join(tempDir.path,
+        'ditto-export-${DateTime.now().millisecondsSinceEpoch}.zip');
+
     // Create zip file in background isolate to avoid blocking UI
-    await compute(_createZipFile, _ZipParams(sourceDir, tempZipPath));
-    
+    await compute(
+        _createZipFile, (sourceDir: sourceDir, outputPath: tempZipPath));
+
     // Verify ZIP file was created successfully
     final zipFile = File(tempZipPath);
     if (!await zipFile.exists()) {
       throw Exception('Failed to create ZIP file');
     }
-    
+
     final zipSize = await zipFile.length();
     if (zipSize == 0) {
       throw Exception('Created ZIP file is empty');
     }
-    
+
     return tempZipPath;
   } catch (e) {
     throw Exception('Failed to create database export: ${e.toString()}');
