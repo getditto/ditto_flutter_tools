@@ -1,4 +1,12 @@
+## 3.0.0
+
+- Requires `ditto_live` 5.0.1 or newer. Ditto Flutter SDK 4 is no longer supported.
+- Removed `SyncStatusHelper`, `SyncStatusView`, and `SyncStatus`. Use `PeerSyncStatusView` to inspect Ditto's per-peer synchronization records.
+- Removed the obsolete `DITTO_WEBSOCKET_URL` example configuration. Ditto 5 derives the server WebSocket endpoint from the authentication URL.
+- Retains Peers List, Query Editor, System Settings, Peer Sync Status, Permissions Health, and Disk Usage from 2.0.0.
+
 ## 2.0.0
+
 - Updated to Ditto SDK 4.12.1
 - Added new features:
   - Query Editor
