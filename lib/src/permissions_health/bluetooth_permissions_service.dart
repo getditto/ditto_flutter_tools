@@ -10,7 +10,7 @@ class BluetoothPermissionsService {
 
   /// Get the appropriate Bluetooth permission for the current platform
   Permission get _bluetoothPermission {
-    if (Ditto.currentPlatform == SupportedPlatform.android)  {
+    if (Ditto.currentPlatform == SupportedPlatform.android) {
       return Permission.bluetoothConnect;
     }
     return Permission.bluetooth;

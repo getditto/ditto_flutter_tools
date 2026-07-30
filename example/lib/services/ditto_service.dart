@@ -24,15 +24,12 @@ class DittoService {
   /// This function:
   /// 1. Requests required Bluetooth and WiFi permissions on non-web platforms
   /// 2. Initializes the Ditto SDK
-  /// 3. Sets up online playground identity with the provided app ID and token
-  /// 4. Enables peer-to-peer communication on non-web platforms
-  /// 5. Configures WebSocket connection to Ditto cloud
-  /// 6. Starts sync and updates the app state with the configured Ditto instance
+  /// 3. Sets up identity with the provided token
+  /// 4. Starts sync and updates the app state with the configured Ditto instance
   Future<void> initialize(
     String appId,
     String token,
     String authUrl,
-    String websocketUrl,
   ) async {
     // Note: macOS handles Bluetooth permissions differently via entitlements
     if (!kIsWeb &&
@@ -56,28 +53,34 @@ class DittoService {
       print("[$level] => $message");
     };
 
-    final identity = OnlinePlaygroundIdentity(
-        appID: appId,
-        token: token,
-        customAuthUrl: authUrl,
-        enableDittoCloudSync: false);
+    final config = DittoConfig(
+      databaseID: appId,
+      connect: DittoConfigConnectServer(url: authUrl),
+    );
 
-    _ditto = await Ditto.open(identity: identity);
+    _ditto = await Ditto.open(config);
 
     if (!isInitialized) {
       throw Exception("Failed to initialize Ditto");
     }
 
-    // Now we can use the getter which guarantees non-null
-    ditto.updateTransportConfig((config) {
-      // Note: this will not enable peer-to-peer sync on the web platform
-      config.setAllPeerToPeerEnabled(true);
-      config.connect.webSocketUrls.add(websocketUrl);
+    // Set up auth expiration handler before starting sync
+    await ditto.auth.setExpirationHandler((ditto, timeUntilExpiration) {
+      ditto.auth.login(
+        token: token,
+        provider: Authenticator.developmentProvider,
+      );
     });
 
-    //setup device information for peer listing
+    // Perform initial login
+    await ditto.auth.login(
+      token: token,
+      provider: Authenticator.developmentProvider,
+    );
+
+    // Setup device information for peer listing
     ditto.deviceName = "Flutter (${ditto.deviceName})";
 
-    ditto.startSync();
+    ditto.sync.start();
   }
 }

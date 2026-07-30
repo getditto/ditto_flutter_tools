@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:ditto_live/ditto_live.dart';
 import 'package:flutter/foundation.dart';
 import 'package:share_plus/share_plus.dart';
@@ -17,9 +19,8 @@ class QueryResultExporter {
       final timestamp = DateTime.now().millisecondsSinceEpoch;
 
       // Extract and convert query results to JSON string
-      final jsonContent = rawQueryResult.items
-          .map((item) => item.value.toString())
-          .join('\n');
+      final jsonContent =
+          rawQueryResult.items.map((item) => jsonEncode(item.value)).join('\n');
 
       if (kIsWeb) {
         return await _shareOnWeb(jsonContent, timestamp);
