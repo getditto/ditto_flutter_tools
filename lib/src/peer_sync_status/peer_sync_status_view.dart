@@ -16,11 +16,14 @@ class PeerSyncStatusView extends StatefulWidget {
 }
 
 class _PeerSyncStatusViewState extends State<PeerSyncStatusView> {
-  final query = "SELECT * FROM COLLECTION system:data_sync_info (documents MAP) ORDER BY sync_session_status, last_update_received_time DESC";
+  static const query = 'SELECT * FROM system:data_sync_info '
+      'ORDER BY documents.sync_session_status, '
+      'documents.last_update_received_time DESC';
   final _syncStatusStreamController = StreamController<QueryResult>.broadcast();
   StoreObserver? _syncStatusObserver;
   QueryResult? _latestSyncStatusResult;
   StreamSubscription? _observerSubscription;
+  Object? _observerError;
 
   Stream<QueryResult> get _syncStatusStream async* {
     if (_latestSyncStatusResult != null) {
@@ -32,22 +35,28 @@ class _PeerSyncStatusViewState extends State<PeerSyncStatusView> {
   @override
   void initState() {
     super.initState();
-    _initializeObserver();
-  }
-
-  Future<void> _initializeObserver() async {
     _registerObserver();
   }
 
   void _registerObserver() {
-    _syncStatusObserver = widget.ditto.store.registerObserver(query);
-    _observerSubscription = _syncStatusObserver!.changes.listen((result) {
-      // Only process if the widget is still mounted and stream is not closed
-      if (mounted && !_syncStatusStreamController.isClosed) {
-        _latestSyncStatusResult = result;
-        _syncStatusStreamController.add(result);
-      }
-    });
+    try {
+      _syncStatusObserver = widget.ditto.store.registerObserver(query);
+      _observerSubscription = _syncStatusObserver!.changes.listen(
+        (result) {
+          if (mounted && !_syncStatusStreamController.isClosed) {
+            _latestSyncStatusResult = result;
+            _syncStatusStreamController.add(result);
+          }
+        },
+        onError: (Object error, StackTrace stackTrace) {
+          if (mounted) {
+            setState(() => _observerError = error);
+          }
+        },
+      );
+    } catch (error) {
+      _observerError = error;
+    }
   }
 
   @override
@@ -55,25 +64,54 @@ class _PeerSyncStatusViewState extends State<PeerSyncStatusView> {
     // Cancel the subscription first to stop incoming events
     _observerSubscription?.cancel();
     _observerSubscription = null;
-    
+
     // Cancel the observer
     _syncStatusObserver?.cancel();
     _syncStatusObserver = null;
-    
+
     // Close the stream controller last
     if (!_syncStatusStreamController.isClosed) {
       _syncStatusStreamController.close();
     }
-    
+
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_observerError case final error?) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.error_outline,
+                color: Theme.of(context).colorScheme.error,
+                size: 32,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Unable to load peer sync status',
+                style: Theme.of(context).textTheme.titleMedium,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              SelectableText(
+                error.toString(),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return StreamBuilder<QueryResult>(
       stream: _syncStatusStream,
       builder: (context, snapshot) {
-        if (!snapshot.hasData || snapshot.data!.items.isEmpty) {
+        if (!snapshot.hasData) {
           return const Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -87,6 +125,15 @@ class _PeerSyncStatusViewState extends State<PeerSyncStatusView> {
         }
 
         final result = snapshot.data!;
+        if (result.items.isEmpty) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(32),
+              child: Text('No peer sync information available'),
+            ),
+          );
+        }
+
         final syncStatuses = result.items
             .map((item) => SyncStatus.fromJson(item.value))
             .toList();
@@ -118,13 +165,6 @@ class _PeerSyncStatusViewState extends State<PeerSyncStatusView> {
               const SizedBox(height: 16),
               ...notConnectedPeers.map((peer) => _buildPeerCard(peer, context)),
             ],
-            if (connectedPeers.isEmpty && notConnectedPeers.isEmpty)
-              const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(32.0),
-                  child: Text('No peer sync information available'),
-                ),
-              ),
           ],
         );
       },
