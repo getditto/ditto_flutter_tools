@@ -29,7 +29,6 @@ class _QueryEditorViewState extends State<QueryEditorView> {
     super.dispose();
   }
 
-
   Future<void> _executeQuery() async {
     if (_queryController.text.trim().isEmpty) {
       setState(() {
@@ -107,16 +106,19 @@ class _QueryEditorViewState extends State<QueryEditorView> {
       });
     } else {
       // This is likely a mutation query (INSERT/UPDATE/DELETE)
-      final mutatedIds = result.mutatedDocumentIDs;
+      final mutatedIds = result.mutatedDocumentIDs();
       final mutationInfo = <Map<String, dynamic>>[];
-      
+
       if (mutatedIds.isNotEmpty) {
         for (final docId in mutatedIds) {
           mutationInfo.add({'type': 'mutation', 'id': docId.toString()});
         }
       } else if (result.items.isEmpty) {
         // Query executed but no items returned or mutated
-        mutationInfo.add({'type': 'success', 'message': 'Query executed successfully (no results)'});
+        mutationInfo.add({
+          'type': 'success',
+          'message': 'Query executed successfully (no results)'
+        });
       }
 
       setState(() {
@@ -181,7 +183,8 @@ class _QueryEditorViewState extends State<QueryEditorView> {
                               child: SizedBox(
                                 width: 24,
                                 height: 24,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
                               ),
                             ),
                           )
@@ -210,7 +213,6 @@ class _QueryEditorViewState extends State<QueryEditorView> {
           ],
         ),
       );
-
 
   Widget get _errorDisplay => Container(
         padding: const EdgeInsets.all(12),
@@ -295,7 +297,8 @@ class _QueryEditorViewState extends State<QueryEditorView> {
                   itemBuilder: (context, index) {
                     final item = _queryItems[index];
                     final documentData = item.value;
-                    final docId = documentData['_id']?.toString() ?? 'Document ${index + 1}';
+                    final docId = documentData['_id']?.toString() ??
+                        'Document ${index + 1}';
                     final jsonString = documentData.toString();
 
                     return Card(
@@ -322,7 +325,9 @@ class _QueryEditorViewState extends State<QueryEditorView> {
                               style: TextStyle(
                                 fontSize: 13,
                                 fontFamily: 'monospace',
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
                               ),
                             ),
                           ),
@@ -359,7 +364,6 @@ class _QueryEditorViewState extends State<QueryEditorView> {
                   : const SizedBox.shrink(),
         ),
       );
-
 
   Widget get _resultsSection => Expanded(
         child: Container(
