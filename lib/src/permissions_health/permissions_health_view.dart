@@ -78,7 +78,7 @@ class _PermissionsHealthViewState extends State<PermissionsHealthView> {
       final adapterState = await _bluetoothService.getFreshAdapterState();
       final isSupported = await _bluetoothService.isBluetoothSupported();
       final detailedInfo = await _bluetoothService.getDetailedBluetoothInfo();
-      
+
       // Load WiFi permission data
       final wifiResult = await checkWifiPermissions();
       final wifiAwareResult = await checkWifiAwarePermissions();
@@ -171,7 +171,8 @@ class _PermissionsHealthViewState extends State<PermissionsHealthView> {
     // Add detailed information if available
     if (detailedInfo != null) {
       if (Ditto.currentPlatform == SupportedPlatform.android) {
-        detailTexts.add('Warning: Android Emulators might display enabled when they have no physical Bluetooth adapter.');
+        detailTexts.add(
+            'Warning: Android Emulators might display enabled when they have no physical Bluetooth adapter.');
       }
 
       // Add error information if any
@@ -205,7 +206,7 @@ class _PermissionsHealthViewState extends State<PermissionsHealthView> {
 
   Widget _buildWifiStatusCard() {
     final wifiResult = _wifiPermissionResult;
-    
+
     if (wifiResult == null) {
       return _buildCard(
         title: 'Wi-Fi Status',
@@ -216,11 +217,12 @@ class _PermissionsHealthViewState extends State<PermissionsHealthView> {
     }
 
     final isConfigured = wifiResult.status == WifiPermissionStatus.enabled;
-    final isNotSupported = wifiResult.status == WifiPermissionStatus.notSupported;
-    
+    final isNotSupported =
+        wifiResult.status == WifiPermissionStatus.notSupported;
+
     String statusText;
     bool isHealthy;
-    
+
     if (isNotSupported) {
       statusText = 'Wi-Fi: Platform not supported';
       isHealthy = false;
@@ -243,7 +245,7 @@ class _PermissionsHealthViewState extends State<PermissionsHealthView> {
 
   Widget _buildWifiAwareStatusCard() {
     final wifiAwareResult = _wifiAwarePermissionResult;
-    
+
     if (wifiAwareResult == null) {
       return _buildCard(
         title: 'Wi-Fi Aware Status',
@@ -254,11 +256,12 @@ class _PermissionsHealthViewState extends State<PermissionsHealthView> {
     }
 
     final isConfigured = wifiAwareResult.status == WifiPermissionStatus.enabled;
-    final isNotSupported = wifiAwareResult.status == WifiPermissionStatus.notSupported;
-    
+    final isNotSupported =
+        wifiAwareResult.status == WifiPermissionStatus.notSupported;
+
     String statusText;
     bool isHealthy;
-    
+
     if (isNotSupported) {
       statusText = 'Wi-Fi Aware: Platform not supported';
       isHealthy = false;
@@ -275,7 +278,8 @@ class _PermissionsHealthViewState extends State<PermissionsHealthView> {
       statusText: statusText,
       isHealthy: isHealthy,
       showActionButton: false,
-      detailTexts: wifiAwareResult.message.isNotEmpty ? [wifiAwareResult.message] : null,
+      detailTexts:
+          wifiAwareResult.message.isNotEmpty ? [wifiAwareResult.message] : null,
     );
   }
 

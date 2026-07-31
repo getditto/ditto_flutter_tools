@@ -1,11 +1,15 @@
 import 'package:ditto_flutter_tools/src/util.dart';
 import 'package:ditto_live/ditto_live.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../cross_platform/cross_platform.dart';
+
+List<(String, int)> _computeDirectorySizes(String directory) =>
+    directorySizeSummary(directory);
 
 class DiskUsageView extends StatefulWidget {
   final Ditto ditto;
@@ -16,22 +20,41 @@ class DiskUsageView extends StatefulWidget {
 }
 
 class _DiskUsageViewState extends State<DiskUsageView> {
-  late final _paths = directorySizeSummary(
-    widget.ditto.persistenceDirectory,
-  );
+  late Future<List<(String, int)>> _pathsFuture;
 
   @override
-  Widget build(BuildContext context) => ListView(
-        children: [
-          _buttonBar,
-          const Divider(),
-          ..._paths.map(
-            (pair) => ListTile(
-              title: Text(pair.$1),
-              trailing: Text(humanReadableBytes(pair.$2)),
-            ),
-          )
-        ],
+  void initState() {
+    super.initState();
+    _pathsFuture = compute(
+      _computeDirectorySizes,
+      widget.ditto.absolutePersistenceDirectory,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) => FutureBuilder<List<(String, int)>>(
+        future: _pathsFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(child: Text("Error: ${snapshot.error}"));
+          }
+          final paths = snapshot.data ?? [];
+          return ListView(
+            children: [
+              _buttonBar,
+              const Divider(),
+              ...paths.map(
+                (pair) => ListTile(
+                  title: Text(pair.$1),
+                  trailing: Text(humanReadableBytes(pair.$2)),
+                ),
+              )
+            ],
+          );
+        },
       );
 
   Widget get _buttonBar => Padding(
@@ -114,7 +137,7 @@ class _DiskUsageViewState extends State<DiskUsageView> {
 
             try {
               tempZipPath = await createTempZipForSharing(
-                  widget.ditto.persistenceDirectory);
+                  widget.ditto.absolutePersistenceDirectory);
 
               // Verify ZIP file exists and has content
               final zipFile = XFile(tempZipPath);

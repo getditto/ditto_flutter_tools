@@ -1,6 +1,5 @@
 // ignore_for_file: invalid_use_of_visible_for_testing_member
 
-import 'package:example/services/subscription_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:beamer/beamer.dart';
@@ -8,7 +7,6 @@ import 'package:beamer/beamer.dart';
 import 'services/ditto_service.dart';
 import 'widgets/main_list_view.dart';
 import 'screens/peers_list_screen.dart';
-import 'screens/sync_status_screen.dart';
 import 'screens/peer_sync_status_screen.dart';
 import 'screens/permissions_health_screen.dart';
 import 'screens/disk_usage_screen.dart';
@@ -43,14 +41,12 @@ class DittoExample extends StatefulWidget {
 
 class _DittoExampleState extends State<DittoExample> {
   //load in values from env file
-  final appID = dotenv.env['DITTO_APP_ID'] ??
+  final appId = dotenv.env['DITTO_APP_ID'] ??
       (throw Exception("DITTO_APP_ID not found in .env file"));
-  final token = dotenv.env['DITTO_TOKEN'] ??
-      (throw Exception("DITTO_TOKEN not found in .env file"));
+  final token = dotenv.env['DITTO_PLAYGROUND_TOKEN'] ??
+      (throw Exception("DITTO_PLAYGROUND_TOKEN not found in .env file"));
   final authUrl = dotenv.env['DITTO_AUTH_URL'] ??
       (throw Exception("DITTO_AUTH_URL not found in .env file"));
-  final websocketUrl = dotenv.env['DITTO_WEBSOCKET_URL'] ??
-      (throw Exception("DITTO_WEBSOCKET_URL not found in .env file"));
   BeamerDelegate? _beamerDelegate;
   bool _isInitializing = true;
   String? _errorMessage;
@@ -99,10 +95,7 @@ class _DittoExampleState extends State<DittoExample> {
     try {
       // Setup ditto provider
       final dittoService = DittoService();
-      await dittoService.initialize(appID, token, authUrl, websocketUrl);
-
-      // Only create subscription service after Ditto is fully initialized
-      final subscriptionService = SubscriptionService(dittoService);
+      await dittoService.initialize(appId, token, authUrl);
 
       final beamerDelegate = BeamerDelegate(
         initialPath: homeRoute,
@@ -110,14 +103,9 @@ class _DittoExampleState extends State<DittoExample> {
           routes: {
             homeRoute: (context, state, data) => MainListView(
                   dittoService: dittoService,
-                  subscriptionService: subscriptionService,
                 ),
             peersRoute: (context, state, data) => PeersListScreen(
                   ditto: dittoService.ditto,
-                ),
-            syncStatusRoute: (context, state, data) => SyncStatusScreen(
-                  ditto: dittoService.ditto,
-                  subscriptions: subscriptionService.subscriptions,
                 ),
             peerSyncStatusRoute: (context, state, data) => PeerSyncStatusScreen(
                   ditto: dittoService.ditto,
@@ -131,8 +119,8 @@ class _DittoExampleState extends State<DittoExample> {
                   ditto: dittoService.ditto,
                 ),
             queryEditorRoute: (context, state, data) => QueryEditorScreen(
-              ditto: dittoService.ditto,
-            ),
+                  ditto: dittoService.ditto,
+                ),
           },
         ),
       );
