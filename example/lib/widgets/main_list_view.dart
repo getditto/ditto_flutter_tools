@@ -2,17 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:beamer/beamer.dart';
 
 import '../services/ditto_service.dart';
-import '../services/subscription_service.dart';
 import '../constants/routes.dart';
 
 class MainListView extends StatelessWidget {
   final DittoService dittoService;
-  final SubscriptionService subscriptionService;
 
   const MainListView({
     super.key,
     required this.dittoService,
-    required this.subscriptionService,
   });
 
   @override
@@ -77,26 +74,6 @@ class MainListView extends StatelessWidget {
                     width: 32,
                     height: 32,
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.secondary,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(
-                      Icons.sync,
-                      color: Theme.of(context).colorScheme.onSecondary,
-                      size: 20,
-                    ),
-                  ),
-                  title: const Text("Sync Status"),
-                  trailing: Icon(Icons.chevron_right,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant),
-                  onTap: () => Beamer.of(context).beamToNamed(syncStatusRoute),
-                ),
-                const Divider(),
-                ListTile(
-                  leading: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
                       color: Colors.orange,
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -141,7 +118,7 @@ class MainListView extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
                   color:
-                  Theme.of(context).colorScheme.outline.withOpacity(0.3)),
+                      Theme.of(context).colorScheme.outline.withOpacity(0.3)),
             ),
             child: Column(
               children: [
@@ -162,8 +139,7 @@ class MainListView extends StatelessWidget {
                   title: const Text("Query Editor"),
                   trailing: Icon(Icons.chevron_right,
                       color: Theme.of(context).colorScheme.onSurfaceVariant),
-                  onTap: () =>
-                      Beamer.of(context).beamToNamed(queryEditorRoute),
+                  onTap: () => Beamer.of(context).beamToNamed(queryEditorRoute),
                 ),
               ],
             ),

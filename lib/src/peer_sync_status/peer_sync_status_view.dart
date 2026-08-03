@@ -16,7 +16,8 @@ class PeerSyncStatusView extends StatefulWidget {
 }
 
 class _PeerSyncStatusViewState extends State<PeerSyncStatusView> {
-  final query = "SELECT * FROM COLLECTION system:data_sync_info (documents MAP) ORDER BY sync_session_status, last_update_received_time DESC";
+  final query =
+      'SELECT * FROM system:data_sync_info ORDER BY documents.sync_session_status, documents.last_update_received_time DESC';
   final _syncStatusStreamController = StreamController<QueryResult>.broadcast();
   StoreObserver? _syncStatusObserver;
   QueryResult? _latestSyncStatusResult;
@@ -55,16 +56,16 @@ class _PeerSyncStatusViewState extends State<PeerSyncStatusView> {
     // Cancel the subscription first to stop incoming events
     _observerSubscription?.cancel();
     _observerSubscription = null;
-    
+
     // Cancel the observer
     _syncStatusObserver?.cancel();
     _syncStatusObserver = null;
-    
+
     // Close the stream controller last
     if (!_syncStatusStreamController.isClosed) {
       _syncStatusStreamController.close();
     }
-    
+
     super.dispose();
   }
 
