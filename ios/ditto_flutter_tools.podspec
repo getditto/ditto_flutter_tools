@@ -9,9 +9,9 @@ Pod::Spec.new do |s|
   s.description      = <<-DESC
 Diagnostic and Debugging Tools for Ditto in Flutter
                        DESC
-  s.homepage         = 'https://ditto.live'
+  s.homepage         = 'https://www.ditto.com'
   s.license          = { :file => '../LICENSE' }
-  s.author           = { 'Ditto' => 'support@ditto.live' }
+  s.author           = { 'Ditto' => 'support@ditto.com' }
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'

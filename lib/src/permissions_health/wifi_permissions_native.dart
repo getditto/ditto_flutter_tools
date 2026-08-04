@@ -48,12 +48,14 @@ Future<WifiPermissionResult> _checkiOSWifiPermissions() async {
   try {
     final result = await _channel.invokeMethod('checkiOSWifiPermissions');
     final Map<String, dynamic> response = Map<String, dynamic>.from(result);
-    
+
     final bool isConfigured = response['isConfigured'] ?? false;
     final String message = response['message'] ?? 'Unknown status';
-    
+
     return WifiPermissionResult(
-      status: isConfigured ? WifiPermissionStatus.enabled : WifiPermissionStatus.notConfigured,
+      status: isConfigured
+          ? WifiPermissionStatus.enabled
+          : WifiPermissionStatus.notConfigured,
       message: message,
     );
   } catch (e) {
@@ -68,12 +70,14 @@ Future<WifiPermissionResult> _checkAndroidWifiPermissions() async {
   try {
     final result = await _channel.invokeMethod('checkAndroidWifiPermissions');
     final Map<String, dynamic> response = Map<String, dynamic>.from(result);
-    
+
     final bool isConfigured = response['isConfigured'] ?? false;
     final String message = response['message'] ?? 'Unknown status';
-    
+
     return WifiPermissionResult(
-      status: isConfigured ? WifiPermissionStatus.enabled : WifiPermissionStatus.notConfigured,
+      status: isConfigured
+          ? WifiPermissionStatus.enabled
+          : WifiPermissionStatus.notConfigured,
       message: message,
     );
   } catch (e) {
@@ -86,14 +90,17 @@ Future<WifiPermissionResult> _checkAndroidWifiPermissions() async {
 
 Future<WifiAwarePermissionResult> _checkAndroidWifiAwarePermissions() async {
   try {
-    final result = await _channel.invokeMethod('checkAndroidWifiAwarePermissions');
+    final result =
+        await _channel.invokeMethod('checkAndroidWifiAwarePermissions');
     final Map<String, dynamic> response = Map<String, dynamic>.from(result);
-    
+
     final bool isConfigured = response['isConfigured'] ?? false;
     final String message = response['message'] ?? 'Unknown status';
-    
+
     return WifiAwarePermissionResult(
-      status: isConfigured ? WifiPermissionStatus.enabled : WifiPermissionStatus.notConfigured,
+      status: isConfigured
+          ? WifiPermissionStatus.enabled
+          : WifiPermissionStatus.notConfigured,
       message: message,
     );
   } catch (e) {

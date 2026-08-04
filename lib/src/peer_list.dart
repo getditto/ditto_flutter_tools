@@ -17,15 +17,15 @@ class _PeerListViewState extends State<PeerListView> {
   void initState() {
     super.initState();
 
-    _observer = widget.ditto.presence
-        .observe((graph) => setState(() => _graph = graph));
+    _observer = widget.ditto.presence.observe((graph) {
+      if (mounted) setState(() => _graph = graph);
+    });
   }
 
   @override
   void dispose() {
-    super.dispose();
-
     _observer?.stop();
+    super.dispose();
   }
 
   @override
@@ -55,8 +55,8 @@ class _PeerView extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ExpansionTile(
         title: Text(peer.deviceName),
-        subtitle: Text("Peer Key: ${peer.peerKeyString}"),
-        leading: peer.isConnectedToDittoCloud
+        subtitle: Text("Peer Key: ${peer.peerKey}"),
+        leading: peer.isConnectedToDittoServer
             ? const Icon(Icons.cloud)
             : const Icon(Icons.cloud_off),
         children: [
@@ -64,7 +64,7 @@ class _PeerView extends StatelessWidget {
             const ListTile(title: Text("No connected devices")),
           ...peer.connections.map(
             (conn) => ListTile(
-              title: Text("${conn.peerKeyString1} <=> ${conn.peerKeyString2}"),
+              title: Text("${conn.peer1} <=> ${conn.peer2}"),
               subtitle: Text(conn.connectionType.toString()),
             ),
           )
